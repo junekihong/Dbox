@@ -56,7 +56,12 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			if not mime:
 				mime = "application/octet-stream"
 
-			self.write("<Resource category=\"file\">\n")
+			if os.path.isdir(epath):
+				category = "directory"
+			else:
+				category = "file"
+
+			self.write("<Resource category=\"%s\">\n" % category)
 			self.write("\t<ResourceName>%s</ResourceName>\n" % e)
 			self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
 			self.write("\t<ResourceURL>%s</ResourceURL>\n" % (BASEURL + "/" + resource + "/" + e))
