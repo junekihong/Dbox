@@ -65,7 +65,7 @@ class DigestAuthMixin(object):
         self.set_status(401)
         nonce = self._createNonce()
         #self.set_header("WWW-Authenticate", "Digest algorithm=MD5 realm=%s qop=auth nonce=%s" % (self.realm, nonce))
-        self.set_header("WWW-Authenticate", "Digest algorithm=\"MD5\", realm=\"%s\", qop=auth, nonce=\"%s\"" % (self.realm, nence))
+        self.set_header("WWW-Authenticate", "Digest algorithm=\"MD5\", realm=\"%s\", qop=auth, nonce=\"%s\"" % (self.realm, nonce))
         self.finish()
 
         return False
