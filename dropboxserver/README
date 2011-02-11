@@ -1,0 +1,5 @@
+Server
+Third-party libraries: Tornado, Curtain (Digest auth for Tornado)
+Both are included to make distribution easier.
+
+To run: ./server.py
