@@ -8,7 +8,7 @@ import os
 import time
 import mimetypes
 import base64
-#import shutil
+import shutil
 
 #Default to a subdirectory called webroot
 WEBROOT = "webroot"
@@ -20,11 +20,11 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		creds = {'auth_username': 'foo', 'auth_password': '42'}
 		if uname == creds['auth_username']:
 			return creds
-
-
+		
+		
 	#Handle Get Request
 	@digest.digest_auth('Authusers',getcreds)
-	def	get(self,resource):
+	def get(self,resource):
 		realpath = WEBROOT + "/" + resource
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404)
@@ -32,15 +32,21 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			self.output_directory(resource,realpath)
 		elif os.path.isfile(realpath):
 			self.output_file(resource,realpath)
-
-#raise tornado.web.HTTPError(404,"File or directory not found");
-
-
-#os.remove(realpath);
-#self.write("Success");
-
-#shutil.rmtree(realpath);
-#self.write("Success");
+			
+				
+	#Handle Delete Request
+	@digest.digest_auth('Authusers',getcreds)
+	def delete(self,resource):
+		realpath = WEBROOT + "/" + resource
+		if not os.path.exists(realpath):
+			raise tornado.web.HTTPError(404,"File or directory not found")
+		elif os.path.isdir(realpath):
+			shutil.rmtree(realpath)
+			self.write("Success: Removed the directory")
+		elif os.path.isfile(realpath):
+			os.remove(realpath)
+			self.write("Success: Removed the file")
+			
 
 
 	#Output a directory entry (resource list)
