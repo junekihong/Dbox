@@ -5,7 +5,7 @@ import tornado.web
 
 import optparse
 
-from handler import MainHandler
+from handler import MainHandler,read_passwordfile
 
 #Default options
 WEBROOT = "webroot"
@@ -17,6 +17,7 @@ if __name__=="__main__":
 	parser.add_option('--port','-p',default=PORT,type=int)
 	opts = parser.parse_args()[0]
 	MainHandler.WEBROOT = opts.webroot
+	read_passwordfile()
 	print "Running DBox server on port %i with a web root of '%s' (see `./server.py -h` for options)." % (opts.port,opts.webroot)
 
 	#Handle all urls using MainHandler, with the text following the slash being one parameter

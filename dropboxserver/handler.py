@@ -12,19 +12,20 @@ import shutil
 
 
 class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
-	#TODO: Look up users in a file
 	def getcreds(uname):
-		creds = {'auth_username': 'foo', 'auth_password': '42'}
-		if uname == creds['auth_username']:
-			return creds
+		if uname in MainHandler.creds:
+			return MainHandler.creds[uname]
 		
 		
 	#Handle Get Request
 	@digest.digest_auth('Authusers',getcreds)
 	def get(self,resource):
-		realpath = self.WEBROOT + "/" + resource
+		realpath = os.path.realpath(self.WEBROOT + "/" + resource)
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404)
+		if self.pwpath == realpath:
+			#Forbid password file requests
+			raise tornado.web.HTTPError(403,"Forbidden")
 		elif os.path.isdir(realpath):
 			self.output_directory(resource,realpath)
 		elif os.path.isfile(realpath):
@@ -104,3 +105,17 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		self.write("\t<ResourceContent>%s</ResourceContent>\n" % encoded_data)
 		self.write("</Resource>\n")
 		self.write("</ResourceDownload>\n")
+
+
+#Read the password file and store in the MainHandler class.
+#Each line of the password file has the format user:password
+def read_passwordfile():
+	if True:
+		filename=MainHandler.WEBROOT+"/.passwd"
+		creds = {}
+		f = open(filename)
+		for l in f:
+			[user,pw] = l.strip().split(":",1)
+			creds[user] = {'auth_username': user, 'auth_password': pw}
+		MainHandler.creds = creds
+		MainHandler.pwpath = os.path.realpath(filename)
