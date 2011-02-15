@@ -10,9 +10,6 @@ import mimetypes
 import base64
 import shutil
 
-#Default to a subdirectory called webroot
-WEBROOT = "webroot"
-BASEURL = "http://localhost:8042"
 
 class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	#TODO: Look up users in a file
@@ -25,7 +22,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	#Handle Get Request
 	@digest.digest_auth('Authusers',getcreds)
 	def get(self,resource):
-		realpath = WEBROOT + "/" + resource
+		realpath = self.WEBROOT + "/" + resource
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404)
 		elif os.path.isdir(realpath):
@@ -37,7 +34,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	#Handle Delete Request
 	@digest.digest_auth('Authusers',getcreds)
 	def delete(self,resource):
-		realpath = WEBROOT + "/" + resource
+		realpath = self.WEBROOT + "/" + resource
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404,"File or directory not found")
 		elif os.path.isdir(realpath):
@@ -70,7 +67,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			self.write("<Resource category=\"%s\">\n" % category)
 			self.write("\t<ResourceName>%s</ResourceName>\n" % e)
 			self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
-			self.write("\t<ResourceURL>%s</ResourceURL>\n" % (BASEURL + "/" + resource + "/" + e))
+			self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + resource + "/" + e))
 			self.write("\t<ResourceDate>\n")
 			self.write("\t\t<year>%i</year>\n" % t.tm_year)
 			self.write("\t\t<month>%i</month>\n" % t.tm_mon)
