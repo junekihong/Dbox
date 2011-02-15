@@ -18,22 +18,23 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		
 		
 	#Handle Get Request
-	@digest.digest_auth('Authusers',getcreds)
+	@digest.digest_auth('Dbox',getcreds)
 	def get(self,resource):
 		realpath = os.path.realpath(self.WEBROOT + "/" + resource)
+		#Ensure that the requested path (canonicalized) is actually in the user's home directory 
+		userdir =  os.path.realpath(self.WEBROOT + "/" + self.params['username'])
+		if not realpath.startswith(userdir):
+			raise tornado.web.HTTPError(403,"Forbidden")
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404)
-		if self.pwpath == realpath:
-			#Forbid password file requests
-			raise tornado.web.HTTPError(403,"Forbidden")
-		elif os.path.isdir(realpath):
+		if os.path.isdir(realpath):
 			self.output_directory(resource,realpath)
 		elif os.path.isfile(realpath):
 			self.output_file(resource,realpath)
 			
 				
 	#Handle Delete Request
-	@digest.digest_auth('Authusers',getcreds)
+	@digest.digest_auth('Dbox',getcreds)
 	def delete(self,resource):
 		realpath = self.WEBROOT + "/" + resource
 		if not os.path.exists(realpath):
@@ -68,7 +69,10 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			self.write("<Resource category=\"%s\">\n" % category)
 			self.write("\t<ResourceName>%s</ResourceName>\n" % e)
 			self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
-			self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + resource + "/" + e))
+			if resource.endswith("/"):
+				self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + resource + e))
+			else:
+				self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + resource + "/" + e))
 			self.write("\t<ResourceDate>\n")
 			self.write("\t\t<year>%i</year>\n" % t.tm_year)
 			self.write("\t\t<month>%i</month>\n" % t.tm_mon)
