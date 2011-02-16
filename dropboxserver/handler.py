@@ -20,9 +20,9 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	#Handle Get Request
 	@digest.digest_auth('Dbox',getcreds)
 	def get(self,resource):
-		realpath = os.path.realpath(self.WEBROOT + "/" + resource)
+		realpath = os.path.realpath(os.path.join(self.WEBROOT, resource))
 		#Ensure that the requested path (canonicalized) is actually in the user's home directory 
-		userdir =  os.path.realpath(self.WEBROOT + "/" + self.params['username'])
+		userdir =  os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
 		if not realpath.startswith(userdir):
 			raise tornado.web.HTTPError(403,"Forbidden")
 		if not os.path.exists(realpath):
@@ -36,7 +36,10 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	#Handle Delete Request
 	@digest.digest_auth('Dbox',getcreds)
 	def delete(self,resource):
-		realpath = self.WEBROOT + "/" + resource
+		realpath = os.path.realpath(os.path.join(self.WEBROOT, resource))
+		userdir =  os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
+		if not realpath.startswith(userdir):
+			raise tornado.web.HTTPError(403,"Forbidden")
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404,"File or directory not found")
 		elif os.path.isdir(realpath):
@@ -53,7 +56,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		self.write("<ResourceList>\n")
 		entries = os.listdir(realpath)
 		for e in entries:
-			epath = realpath + '/' + e
+			epath = os.path.join(realpath, e)
 			stats = os.stat(epath);
 			t = time.localtime(stats.st_mtime)
 			mime = mimetypes.guess_type(epath)[0]
@@ -115,7 +118,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 #Each line of the password file has the format user:password
 def read_passwordfile():
 	if True:
-		filename=MainHandler.WEBROOT+"/.passwd"
+		filename=os.path.join(MainHandler.WEBROOT,".passwd")
 		creds = {}
 		f = open(filename)
 		for l in f:
