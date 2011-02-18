@@ -10,6 +10,15 @@ import mimetypes
 import base64
 import shutil
 
+#XML parser library
+from xml.dom import minidom
+
+
+
+def getText(dom,name):
+	return dom.getElementsByTagName(name)[0].childNodes[0].wholeText
+
+
 
 class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	def getcreds(uname):
@@ -48,7 +57,52 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		elif os.path.isfile(realpath):
 			os.remove(realpath)
 			self.write("Success: Removed the file")
+
 			
+	#Handle Put Request
+	#@digest.digest_auth('Dbox',getcreds)
+	def put(self, resource):
+		dom= minidom.parseString(self.request.body)
+		resourceName=getText(dom,"ResourceName")
+		resourceLocation=getText(dom,"ResourceLocation")
+		resourceCategory=dom.getElementsByTagName('Resource')[0].getAttribute('category')
+
+		realpath = os.path.realpath(os.path.join(self.WEBROOT, resourceLocation, resourceName))
+		realdirectory = os.path.realpath(os.path.join(self.WEBROOT, resourceLocation)) 
+		#userdir = os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
+		
+
+		
+		#if not realpath.startswith(userdir):
+		#	raise tornado.web.HTTPError(403,"Fobidden")
+		if not os.path.isdir(realdirectory):
+			raise tornado.web.HTTPError(404,"Directory not found")
+		if(resourceCategory == "file"):
+			f= open(realpath,"w")
+			resourceContent=getText(dom,"ResourceContent")
+			resourceEncoding=getText(dom,"ResourceEncoding")
+			
+			if(resourceEncoding == "Base64"):
+				resourceContent=base64.b64decode(resourceContent)
+				f.write(resourceContent)
+				f.close()
+		elif(resourceCategory == "directory"):
+			if os.path.exists(realpath):
+				raise tornado.web.HTTPError(400,"Bad Request: Directory already exists")
+			else:
+				os.mkdir(realpath)
+		else:
+			raise tornado.web.HTTPError(400,"Must be a file or a directory")
+			
+
+
+
+
+
+
+		#if not resourcePath.startswith(userdir):
+		#	raise tornado.web.HTTPError(403,"Forbidden")
+		#if not 
 
 
 	#Output a directory entry (resource list)
@@ -105,13 +159,16 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			encoded_data = base64.b64encode(data)
 
 		self.write("<Resource category=\"file\">\n")
-		self.write("\t<ResourceName>%s</ResourceName>\n" % resource)
+		self.write("\t<ResourceName>%s</ResourceName>\n" % resource.split('/')[-1])
 		self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
 		self.write("\t<ResourceType>%s</ResourceType>\n" % mime)
 		self.write("\t<ResourceEncoding>%s</ResourceEncoding>\n" % encoding)
 		self.write("\t<ResourceContent>%s</ResourceContent>\n" % encoded_data)
 		self.write("</Resource>\n")
 		self.write("</ResourceDownload>\n")
+	
+
+
 
 
 #Read the password file and store in the MainHandler class.
