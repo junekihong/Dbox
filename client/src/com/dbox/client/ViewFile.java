@@ -1,25 +1,13 @@
 package com.dbox.client;
 
-import java.net.URL;
-
-import com.dbox.client.Login.LoggedIn;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
-public class DirList extends Activity
+public class ViewFile extends Activity
 {   
-    private ListView list;
-    private DirListAdapter adapter;
     private String mHost;
     private String mUrl;
     private String mUsername;
@@ -28,7 +16,7 @@ public class DirList extends Activity
     private Resource[] ls;
     private ProgressDialog mProgressDialog;
     
-	private class LsTask extends AsyncTask<String, Integer, Integer>
+	private class DownloadFileTask extends AsyncTask<String, Integer, Integer>
 	{
 		/**
 		 * Executes task on a background thread.
@@ -54,7 +42,7 @@ public class DirList extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.dirlist);
+        //setContentView(R.layout.dirlist);
         
         Bundle bundle = getIntent().getExtras();
         
@@ -66,12 +54,9 @@ public class DirList extends Activity
 	        mUrl = bundle.getString("path");
 	        mPort = bundle.getInt("port");
 	        
-	        TextView t = (TextView) findViewById(R.id.path);
-	        t.setText(new URL(mUrl).getPath());
-	        
 	        showProgressDialog();
 	        
-	        new LsTask().execute("");
+	        new DownloadFileTask().execute("");
         }
         catch (Exception e)
         {
@@ -81,41 +66,24 @@ public class DirList extends Activity
     
     public void onServerResponse()
     {
-    	hideProgressDialog();
+    	setContentView(R.layout.viewfile);
     	
-        adapter = new DirListAdapter(this,ls);
-        list = (ListView)findViewById(R.id.list);
-        list.setAdapter(adapter);
-        
-        list.setOnItemClickListener
-        (
-        	new OnItemClickListener()
-        	{
-        		@Override
-        		public void onItemClick(AdapterView<?> a, View v, int position, long id)
-        		{
-        			Bundle b = new Bundle();
-        			b.putString("host",mHost);
-        			b.putString("username",mUsername);
-        			b.putString("password",mPassword);
-        			b.putString("path", adapter.ls[position].url());
-        			b.putInt("port",mPort);
-        			
-        			if (adapter.ls[position].isDirectory())
-        			{	
-	        			Intent i = new Intent(DirList.this,DirList.class);
-	        			i.putExtras(b);
-	        			startActivity(i); 
-        			}
-        			else
-        			{
-	        			Intent i = new Intent(DirList.this,ViewFile.class);
-	        			i.putExtras(b);
-	        			startActivity(i); 
-        			}
-        		}
-        	 }
-        );
+    	Resource file = ls[0];
+    	
+    	TextView name = (TextView) findViewById(R.id.name);
+    	TextView type = (TextView) findViewById(R.id.type);
+    	TextView size = (TextView) findViewById(R.id.size);
+    	TextView date = (TextView) findViewById(R.id.date);
+    	TextView content = (TextView) findViewById(R.id.content);
+    	
+    	name.setText(file.name());
+    	type.setText(file.type());
+    	size.setText(file.size());
+    	date.setText(file.dateFormatted());
+    	if (file.type().equals("text/plain"))  
+    	content.setText(file.content());
+    	
+    	hideProgressDialog();
     }
     
     /**
@@ -138,12 +106,5 @@ public class DirList extends Activity
     {
     	mProgressDialog.dismiss();
     	mProgressDialog = null;
-    }    
-    
-    @Override
-    public void onDestroy()
-    {
-        list.setAdapter(null);
-        super.onDestroy();
     }
 }

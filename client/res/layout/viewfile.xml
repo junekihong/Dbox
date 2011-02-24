@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/ScrollView01"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+>
+	<RelativeLayout
+		xmlns:android="http://schemas.android.com/apk/res/android"
+		android:layout_width="fill_parent" 
+		android:layout_height="wrap_content"
+		android:weightSum="1.0"
+	>
+		<TableLayout
+			xmlns:android="http://schemas.android.com/apk/res/android"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:stretchColumns="1"
+			android:id="@+id/table"
+		>
+			<TableRow>
+				<TextView
+					android:id="@+id/title"
+					android:layout_column="1"
+					android:textSize="20sp"
+					android:textColor="#a5d4e2"
+					android:text="File View"
+					android:textStyle="normal"
+				/>
+			</TableRow>
+			
+			<TableRow>
+				<TextView
+					android:layout_column="1"
+					android:text="Filename"
+					android:padding="3dip"
+				/>
+				<TextView
+					android:id="@+id/name"
+					android:text="foo.txt"
+					android:gravity="right"
+					android:padding="3dip"
+				/>
+			</TableRow>
+
+			<TableRow>
+				<TextView
+					android:layout_column="1"
+					android:text="Type"
+					android:padding="3dip"
+				/>
+				<TextView
+					android:id="@+id/type"
+					android:text="text/plain"
+					android:gravity="right"
+					android:padding="3dip"
+				/>
+			</TableRow>
+
+			<TableRow>
+				<TextView
+					android:layout_column="1"
+					android:text="Date"
+					android:padding="3dip"
+				/>
+				<TextView
+					android:id="@+id/date"
+					android:text="02/24/2011 14:35"
+					android:gravity="right"
+					android:padding="3dip"
+				/>
+			</TableRow>
+
+			<TableRow>
+				<TextView
+					android:layout_column="1"
+					android:text="Size"
+					android:padding="3dip"
+				/>
+				<TextView
+					android:id="@+id/size"
+					android:text="100kb"
+					android:gravity="right"
+					android:padding="3dip"
+				/>
+			</TableRow>
+
+			<View
+				android:layout_height="2dip"
+				android:background="#FF909090"
+			/>
+		</TableLayout>
+
+		<TextView
+			android:id="@+id/content"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_column="1"
+			android:layout_below="@+id/table"
+			android:text=""
+			android:padding="3dip"
+		/>
+	</RelativeLayout>
+</ScrollView>

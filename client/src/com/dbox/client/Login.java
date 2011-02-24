@@ -81,9 +81,7 @@ public class Login extends Activity
 	    	switch (result)
 	    	{
 	    		case SUCCESS:
-	    			Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
-	    			
-					try
+	    			try
 					{
 						URL url = new URL(mHost);
 						String path = "http://" + url.getHost() + ":" + mPort + "/" + mUsername + "/";

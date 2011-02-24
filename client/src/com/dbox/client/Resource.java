@@ -10,6 +10,7 @@ public class Resource
 	private Date date;
 	private int size;
 	private boolean isDirectory;
+	private String content;
 	
 	public Resource( String name, String url, String type, Date date, int size, boolean dir)
 	{
@@ -54,5 +55,15 @@ public class Resource
 	public boolean isDirectory()
 	{
 		return isDirectory;
+	}
+	
+	public String content()
+	{
+		return content;
+	}
+	
+	public void setContent(String c)
+	{
+		content = c;
 	}
 }
