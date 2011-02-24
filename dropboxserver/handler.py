@@ -184,6 +184,6 @@ def read_passwordfile():
 			[user,pw] = l.strip().split(":",1)
 			creds[user] = {'auth_username': user, 'auth_password': pw}
 	if not creds:
-		raise Exception("Error: Password file contained no users (expected a file with lines in the format user:password)"")
+		raise Exception("Error: Password file contained no users (expected a file with lines in the format user:password)")
 	MainHandler.creds = creds
 	MainHandler.pwpath = os.path.realpath(filename)
