@@ -1,7 +1,9 @@
 package com.dbox.client;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,6 +29,11 @@ public class Login extends Activity
 	private ProgressDialog mLoginProgress;
 	
 	/**
+	 * Login progress dialog
+	 */
+	private AlertDialog mErrorDialog;
+	
+	/**
 	 * Asynchronous Login Task
 	 */
 	private class LoginTask extends AsyncTask<String, Integer, LoggedIn>
@@ -48,10 +55,18 @@ public class Login extends Activity
 	    {
 	    	hideLoginDialog();
 	    	
-	    	if (result == LoggedIn.SUCCESS)
+	    	switch (result)
 	    	{
-	    		Intent i = new Intent(Login.this,DirList.class);
-	    		startActivity(i);
+	    		case SUCCESS:
+	    			Intent i = new Intent(Login.this,DirList.class);
+		    		startActivity(i);
+		    		break;
+	    		case FAILURE:
+	    			showErrorDialog("Invalid Login Credentials");
+	    			break;
+	    		case ERROR:
+	    			showErrorDialog("Could not connect to the host on the specified port.");
+	    			break;
 	    	}
 	    }
 	}
@@ -72,14 +87,34 @@ public class Login extends Activity
     		{
     			public void onClick(View v)
    				{
+    				// get the user input
    					String host = ((EditText) findViewById(R.id.host_input)).getText().toString();
    					String port = ((EditText) findViewById(R.id.port_input)).getText().toString();
    					String username = ((EditText) findViewById(R.id.username_input)).getText().toString();
    					String password = ((EditText) findViewById(R.id.password_input)).getText().toString();
-    				
-   					showLoginDialog();
    					
-    				new LoginTask().execute(host,port,username,password);
+   					// check for input errors
+   					if (host.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid host.");
+   					}
+   					else if (port.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid port.");
+   					}
+   					else if (username.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid username.");
+   					}
+   					else if (password.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid password.");
+   					}
+   					else
+   					{
+   						showLoginDialog();
+   						new LoginTask().execute(host,port,username,password);
+   					}
     			}
     		}
         );
@@ -105,5 +140,41 @@ public class Login extends Activity
     {
     	mLoginProgress.dismiss();
     	mLoginProgress = null;
+    }
+    
+    /**
+     * Show an error dialog.
+     * @return void
+     */
+    public void showErrorDialog(String error)
+    {
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder
+    		.setTitle("Error")
+    		.setMessage(error)
+    		.setCancelable(false)
+    		.setPositiveButton
+    		(
+    			"OK",
+    			new DialogInterface.OnClickListener()
+    			{
+    	           public void onClick(DialogInterface dialog, int id)
+    	           {
+    	                // nada to do...
+    	           }
+    	       }
+    		);
+    	mErrorDialog = builder.create();
+    	mErrorDialog.show();
+    }
+    
+    /**
+     * Hide the error dialog.
+     * @return void
+     */
+    public void hideErrorDialog()
+    {
+    	mErrorDialog.dismiss();
+    	mErrorDialog = null;
     }
 }
