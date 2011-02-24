@@ -1,5 +1,7 @@
 package com.dbox.client;
 
+import java.net.URL;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 /**
  * Login Activity
@@ -34,6 +37,26 @@ public class Login extends Activity
 	private AlertDialog mErrorDialog;
 	
 	/**
+	 * User Input: Server Host
+	 */
+	private String mHost;
+	
+	/**
+	 * User Input: Server Port
+	 */
+	private int mPort;
+	
+	/**
+	 * User Input: Username
+	 */
+	private String mUsername;
+	
+	/**
+	 * User Input: Password 
+	 */
+	private String mPassword;
+	
+	/**
 	 * Asynchronous Login Task
 	 */
 	private class LoginTask extends AsyncTask<String, Integer, LoggedIn>
@@ -44,7 +67,7 @@ public class Login extends Activity
 		@Override
 		protected LoggedIn doInBackground(String... data)
 		{
-			return WebService.login(data[0], Integer.parseInt(data[1]), data[2], data[3]);
+			return WebService.login(mHost,mPort,mUsername,mPassword);
 		}
 
 		/**
@@ -58,8 +81,29 @@ public class Login extends Activity
 	    	switch (result)
 	    	{
 	    		case SUCCESS:
-	    			Intent i = new Intent(Login.this,DirList.class);
-		    		startActivity(i);
+	    			Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
+	    			
+					try
+					{
+						URL url = new URL(mHost);
+						String path = "http://" + url.getHost() + ":" + mPort + "/" + mUsername + "/";
+						
+		    			Bundle b = new Bundle();
+		    			b.putString("host", mHost);
+		    			b.putInt("port", mPort);
+		    			b.putString("username", mUsername);
+		    			b.putString("password", mPassword);
+		    			b.putString("path", path);
+		    			
+		    			Intent i = new Intent(Login.this,DirList.class);
+		    			i.putExtras(b);
+			    		startActivity(i);
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+	    			
 		    		break;
 	    		case FAILURE:
 	    			showErrorDialog("Invalid Login Credentials");
@@ -112,6 +156,11 @@ public class Login extends Activity
    					}
    					else
    					{
+   						mHost = host;
+   						mPort = Integer.parseInt(port);
+   						mUsername = username;
+   						mPassword = password;
+   						
    						showLoginDialog();
    						new LoginTask().execute(host,port,username,password);
    					}
@@ -166,15 +215,5 @@ public class Login extends Activity
     		);
     	mErrorDialog = builder.create();
     	mErrorDialog.show();
-    }
-    
-    /**
-     * Hide the error dialog.
-     * @return void
-     */
-    public void hideErrorDialog()
-    {
-    	mErrorDialog.dismiss();
-    	mErrorDialog = null;
     }
 }
