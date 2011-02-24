@@ -19,7 +19,6 @@ def getText(dom,name):
 	return dom.getElementsByTagName(name)[0].childNodes[0].wholeText
 
 
-
 class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	def getcreds(uname):
 		if uname in MainHandler.creds:
@@ -60,7 +59,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 
 			
 	#Handle Put Request
-	#@digest.digest_auth('Dbox',getcreds)
+	@digest.digest_auth('Dbox',getcreds)
 	def put(self, resource):
 		dom= minidom.parseString(self.request.body)
 		resourceName=getText(dom,"ResourceName")
@@ -69,12 +68,12 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 
 		realpath = os.path.realpath(os.path.join(self.WEBROOT, resourceLocation, resourceName))
 		realdirectory = os.path.realpath(os.path.join(self.WEBROOT, resourceLocation)) 
-		#userdir = os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
+		userdir = os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
 		
 
 		
-		#if not realpath.startswith(userdir):
-		#	raise tornado.web.HTTPError(403,"Fobidden")
+		if not realpath.startswith(userdir):
+			raise tornado.web.HTTPError(403,"Fobidden")
 		if not os.path.isdir(realdirectory):
 			raise tornado.web.HTTPError(404,"Directory not found")
 		if(resourceCategory == "file"):
@@ -93,16 +92,6 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 				os.mkdir(realpath)
 		else:
 			raise tornado.web.HTTPError(400,"Must be a file or a directory")
-			
-
-
-
-
-
-
-		#if not resourcePath.startswith(userdir):
-		#	raise tornado.web.HTTPError(403,"Forbidden")
-		#if not 
 
 
 	#Output a directory entry (resource list)
@@ -146,6 +135,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	def output_file(self,resource,realpath):
 		self.write("<ResourceDownload>\n")
 		stats = os.stat(realpath);
+		t = time.localtime(stats.st_mtime)
 		mime = mimetypes.guess_type(realpath)[0]
 		if not mime:
 			mime = "application/octet-stream"
@@ -161,6 +151,16 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		self.write("<Resource category=\"file\">\n")
 		self.write("\t<ResourceName>%s</ResourceName>\n" % resource.split('/')[-1])
 		self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
+		#TIME
+		self.write("\t<ResourceDate>\n")
+		self.write("\t\t<year>%i</year>\n" % t.tm_year)
+		self.write("\t\t<month>%i</month>\n" % t.tm_mon)
+		self.write("\t\t<day>%i</day>\n" % t.tm_mday)
+		self.write("\t\t<hour>%i</hour>\n" % t.tm_hour)
+		self.write("\t\t<min>%i</min>\n" % t.tm_min)
+		self.write("\t\t<sec>%i</sec>\n" % t.tm_sec)
+		self.write("\t</ResourceDate>\n")
+		#END TIME
 		self.write("\t<ResourceType>%s</ResourceType>\n" % mime)
 		self.write("\t<ResourceEncoding>%s</ResourceEncoding>\n" % encoding)
 		self.write("\t<ResourceContent>%s</ResourceContent>\n" % encoded_data)

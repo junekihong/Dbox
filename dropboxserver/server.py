@@ -6,6 +6,7 @@ import tornado.web
 import optparse
 import os.path
 import sys
+import socket
 
 from handler import MainHandler,read_passwordfile
 
@@ -38,5 +39,5 @@ if __name__=="__main__":
 		tornado.ioloop.IOLoop.instance().start()
 	except KeyboardInterrupt:
 		print
-	except Exception,e:
-		print e
+	except socket.error,e:
+		print "Socket error:",e
