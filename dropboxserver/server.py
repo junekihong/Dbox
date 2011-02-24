@@ -33,8 +33,8 @@ if __name__=="__main__":
 	application = tornado.web.Application([ ("/(.*)",MainHandler) ])
 	#Start up the server on port 8042 and begin an IO loop with it
 	server = tornado.httpserver.HTTPServer(application)
-	server.listen(PORT)
 	try:
+		server.listen(opts.port)
 		tornado.ioloop.IOLoop.instance().start()
 	except KeyboardInterrupt:
 		print
