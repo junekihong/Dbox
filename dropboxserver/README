@@ -1,5 +1,10 @@
 Server
-Third-party libraries: Tornado, Curtain (Digest auth for Tornado)
+Written in python.
+Uses two third-party libraries (aside from the standard python library):
+-Tornado (Web server)
+-Curtain (Digest auth for Tornado, slightly modified by us to fix a couple of bugs)
 Both are included to make distribution easier.
 
 To run: ./server.py
+-p can be used to specify the port
+-w can be used to specify an alternate webroot
