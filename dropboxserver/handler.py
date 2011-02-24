@@ -19,7 +19,6 @@ def getText(dom,name):
 	return dom.getElementsByTagName(name)[0].childNodes[0].wholeText
 
 
-
 class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	def getcreds(uname):
 		if uname in MainHandler.creds:
@@ -93,16 +92,6 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 				os.mkdir(realpath)
 		else:
 			raise tornado.web.HTTPError(400,"Must be a file or a directory")
-			
-
-
-
-
-
-
-		#if not resourcePath.startswith(userdir):
-		#	raise tornado.web.HTTPError(403,"Forbidden")
-		#if not 
 
 
 	#Output a directory entry (resource list)
