@@ -174,12 +174,16 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 #Read the password file and store in the MainHandler class.
 #Each line of the password file has the format user:password
 def read_passwordfile():
-	if True:
-		filename=os.path.join(MainHandler.WEBROOT,".passwd")
-		creds = {}
-		f = open(filename)
-		for l in f:
+	filename=os.path.join(MainHandler.WEBROOT,".passwd")
+	creds = {}
+	if not os.path.isfile(filename):
+		raise Exception("Error: Password file '%s' not found."%filename)
+	f = open(filename)
+	for l in f:
+		if l.find(':') >= 0:
 			[user,pw] = l.strip().split(":",1)
 			creds[user] = {'auth_username': user, 'auth_password': pw}
-		MainHandler.creds = creds
-		MainHandler.pwpath = os.path.realpath(filename)
+	if not creds:
+		raise Exception("Error: Password file contained no users (expected a file with lines in the format user:password)")
+	MainHandler.creds = creds
+	MainHandler.pwpath = os.path.realpath(filename)
