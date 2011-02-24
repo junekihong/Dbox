@@ -68,12 +68,12 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 
 		realpath = os.path.realpath(os.path.join(self.WEBROOT, resourceLocation, resourceName))
 		realdirectory = os.path.realpath(os.path.join(self.WEBROOT, resourceLocation)) 
-		#userdir = os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
+		userdir = os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
 		
 
 		
-		#if not realpath.startswith(userdir):
-		#	raise tornado.web.HTTPError(403,"Fobidden")
+		if not realpath.startswith(userdir):
+			raise tornado.web.HTTPError(403,"Fobidden")
 		if not os.path.isdir(realdirectory):
 			raise tornado.web.HTTPError(404,"Directory not found")
 		if(resourceCategory == "file"):
