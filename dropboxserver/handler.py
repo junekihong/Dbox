@@ -98,6 +98,10 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	def output_directory(self,resource,realpath):
 		self.write("<ResourceList>\n")
 		entries = os.listdir(realpath)
+		#Create an entry for the parent directory, but omit it if the parent is the webroot
+		if os.path.realpath(os.path.join(realpath,'..')) != os.path.realpath(self.WEBROOT):
+			entries.insert(0,'..')
+
 		for e in entries:
 			epath = os.path.join(realpath, e)
 			stats = os.stat(epath);
