@@ -49,9 +49,9 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		if not realpath.startswith(userdir):
 			raise tornado.web.HTTPError(403,"Forbidden")
 		if not os.path.exists(realpath):
-			raise tornado.web.HTTPError(404,"File or directory not found")
+			raise tornado.web.HTTPError(404,"File or directory not found") 
 		elif os.path.isdir(realpath):
-			if realpath.count("/") > 2:
+			if realpath != userdir:
 				shutil.rmtree(realpath)
 				self.write("Success: Removed the directory")
 			else:
