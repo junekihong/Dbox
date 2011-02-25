@@ -8,3 +8,24 @@ Both are included to make distribution easier.
 To run: ./server.py
 -p can be used to specify the port
 -w can be used to specify an alternate webroot
+
+
+Protocol extensions:
+To register a new user:
+Request:
+PUT /register
+<Registration>
+        <Username>bob</Username>
+        <Password>42</Password>
+</Registration>
+
+Response on success:
+<Response>User Created</Response>
+
+
+To change the password of the logged-in user:
+PUT /password
+<Password>1</Password>
+
+Response on success:
+<Response>Password Changed</Response>

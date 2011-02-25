@@ -8,7 +8,7 @@ import os.path
 import sys
 import socket
 
-from handler import MainHandler,read_passwordfile
+from handler import MainHandler,read_passwordfile,RegistrationHandler,PasswordHandler
 
 #Default options
 WEBROOT = "webroot"
@@ -30,8 +30,9 @@ if __name__=="__main__":
 		sys.exit()
 	print "Running DBox server on port %i with a web root of '%s' (see `./server.py -h` for options)." % (opts.port,opts.webroot)
 
-	#Handle all urls using MainHandler, with the text following the slash being one parameter
-	application = tornado.web.Application([ ("/(.*)",MainHandler) ])
+	#Handle registration and password change with own handlers since their behavior is slightly different
+	#Handle all other urls using MainHandler, with the text following the slash being one parameter
+	application = tornado.web.Application([ ("/register",RegistrationHandler),("/password",PasswordHandler),("/(.*)",MainHandler) ])
 	#Start up the server on port 8042 and begin an IO loop with it
 	server = tornado.httpserver.HTTPServer(application)
 	try:

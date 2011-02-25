@@ -16,7 +16,10 @@ from xml.dom import minidom
 
 
 def getText(dom,name):
-	return dom.getElementsByTagName(name)[0].childNodes[0].wholeText
+	try:
+		return dom.getElementsByTagName(name)[0].childNodes[0].wholeText
+	except:
+		raise tornado.web.HTTPError(400,"Invalid XML message (missing tag '%s')" % name ) 
 
 
 class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
@@ -175,6 +178,43 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		self.write("</ResourceDownload>\n")
 	
 
+class RegistrationHandler(tornado.web.RequestHandler):
+	def put(self):
+		dom= minidom.parseString(self.request.body)
+		username=getText(dom,"Username").strip()
+		password=getText(dom,"Password").strip()
+		#Don't allow registration if user already exists (or is a reserved path)
+		if (username in MainHandler.creds) or (username in ['register','password']):
+			raise tornado.web.HTTPError(400,"User already exists")
+		userdir = os.path.realpath(os.path.join(MainHandler.WEBROOT, username))
+		if not os.path.exists(userdir):
+			os.mkdir(userdir)
+		MainHandler.creds[username] = {'auth_username': username, 'auth_password': password}
+		pwfile=os.path.join(MainHandler.WEBROOT,".passwd")
+		f = open(pwfile,"a")
+		f.write("%s:%s\n" % (username,password))
+		f.close()
+		self.write("<Response>User Created</Response>")
+
+class PasswordHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
+	def getcreds(uname):
+		if uname in MainHandler.creds:
+			return MainHandler.creds[uname]
+
+	@digest.digest_auth('Dbox',getcreds)
+	def put(self):
+		username = self.params['username']
+	 	dom= minidom.parseString(self.request.body)
+		password=getText(dom,"Password").strip()
+		MainHandler.creds[username]['auth_password']= password
+		pwfile=os.path.join(MainHandler.WEBROOT,".passwd")
+		#Easier to write replace entire password file than to edit the line with the user
+		f = open(pwfile,"w")
+		for k in MainHandler.creds:
+			v = MainHandler.creds[k]
+			f.write("%s:%s\n" % (v['auth_username'],v['auth_password']) )
+		f.close()
+		self.write("<Response>Password Changed</Response>")
 
 
 
