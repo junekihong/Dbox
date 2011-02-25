@@ -51,8 +51,11 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404,"File or directory not found")
 		elif os.path.isdir(realpath):
-			shutil.rmtree(realpath)
-			self.write("Success: Removed the directory")
+			if count(realpath,"/") > 2:
+				shutil.rmtree(realpath)
+				self.write("Success: Removed the directory")
+			else:
+				raise tornado.web.HTTPError(403,"Cannot delete home directory")
 		elif os.path.isfile(realpath):
 			os.remove(realpath)
 			self.write("Success: Removed the file")
