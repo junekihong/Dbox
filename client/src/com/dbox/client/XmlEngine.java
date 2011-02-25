@@ -31,7 +31,7 @@ public class XmlEngine
 			
 			System.out.println("Resource Size: " + nodeList.getLength());
 
-			for (int s = nodeList.getLength()-1; s >= 0 ; s--)
+			for (int s = 0; s < nodeList.getLength() ; s++)
 			{
 				// declare vars
 				Node n;

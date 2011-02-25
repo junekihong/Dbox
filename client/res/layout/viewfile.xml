@@ -79,7 +79,7 @@
 					android:padding="3dip"
 				/>
 				<TextView
-					android:id="@+id/size"
+					android:id="@+id/filesize"
 					android:text="100kb"
 					android:gravity="right"
 					android:padding="3dip"
