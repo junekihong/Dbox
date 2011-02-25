@@ -51,7 +51,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		if not os.path.exists(realpath):
 			raise tornado.web.HTTPError(404,"File or directory not found")
 		elif os.path.isdir(realpath):
-			if count(realpath,"/") > 2:
+			if realpath.count("/") > 2:
 				shutil.rmtree(realpath)
 				self.write("Success: Removed the directory")
 			else:
@@ -60,7 +60,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			os.remove(realpath)
 			self.write("Success: Removed the file")
 
-			
+
 	#Handle Put Request
 	@digest.digest_auth('Dbox',getcreds)
 	def put(self, resource):
