@@ -9,6 +9,7 @@ import time
 import mimetypes
 import base64
 import shutil
+import urllib
 
 #XML parser library
 from xml.dom import minidom
@@ -126,9 +127,9 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			self.write("\t<ResourceName>%s</ResourceName>\n" % e)
 			self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
 			if resource.endswith("/"):
-				self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + resource + e))
+				self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + urllib.quote(resource + e)) )
 			else:
-				self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + resource + "/" + e))
+				self.write("\t<ResourceURL>http://%s</ResourceURL>\n" % (self.request.host + "/" + urllib.quote(resource + "/" + e)))
 			self.write("\t<ResourceDate>\n")
 			self.write("\t\t<year>%i</year>\n" % t.tm_year)
 			self.write("\t\t<month>%i</month>\n" % t.tm_mon)
