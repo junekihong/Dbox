@@ -150,14 +150,13 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		mime = mimetypes.guess_type(realpath)[0]
 		if not mime:
 			mime = "application/octet-stream"
-
-		data = file(realpath).read()
 		if mime == "text/plain":
 			encoding = "Text"
-			encoded_data = data
+			use_base64 = False
 		else:
 			encoding = "Base64"
-			encoded_data = base64.b64encode(data)
+			use_base64 = True
+
 
 		self.write("<Resource category=\"file\">\n")
 		self.write("\t<ResourceName>%s</ResourceName>\n" % resource.split('/')[-1])
@@ -174,7 +173,17 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		#END TIME
 		self.write("\t<ResourceType>%s</ResourceType>\n" % mime)
 		self.write("\t<ResourceEncoding>%s</ResourceEncoding>\n" % encoding)
-		self.write("\t<ResourceContent>%s</ResourceContent>\n" % encoded_data)
+		self.write("\t<ResourceContent>")
+		datafile = file(realpath)
+		#Read in 3072-byte blocks (which can be encoded to base64 without padding), instead of slurping in the whole file to memory
+		data = datafile.read(3072)
+		while data:
+			if use_base64:
+				self.write( base64.b64encode(data) )
+			else:
+				self.write( data )
+			data = datafile.read(3072)
+		self.write("</ResourceContent>\n")
 		self.write("</Resource>\n")
 		self.write("</ResourceDownload>\n")
 	
