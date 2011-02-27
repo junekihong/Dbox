@@ -32,6 +32,13 @@
         	android:name=".ViewFile"
         	android:label="@string/app_name"
         />
+        
+        <!-- DirList Activity -->
+        <activity
+        	android:name=".Upload"
+        	android:label="@string/app_name"
+        />
+        
     </application>
     
     <!-- Target and Min SDK Versions (Android OS 2.1) -->

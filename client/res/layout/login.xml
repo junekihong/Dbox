@@ -76,9 +76,7 @@
 				android:layout_marginTop="4dp" 
 				android:layout_marginLeft="15dp" 
 				android:layout_marginRight="15dp" 
-				android:nextFocusDown="@+id/port_input"
-				android:text="eridani.acm.jhu.edu"
-			/>
+				android:nextFocusDown="@+id/port_input" android:text="http://acm.jhu.edu"/>
 			<EditText 
 				android:id="@+id/port_input" 
 				android:inputType="number"
@@ -157,5 +155,6 @@
 			android:layout_marginTop="15dp"
 			android:layout_marginLeft="15dp"
 		/>
+		<Button android:layout_toRightOf="@+id/login_button" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignTop="@+id/login_button" android:layout_alignBottom="@+id/login_button" android:id="@+id/register_button" android:text="register" android:textSize="18sp"></Button>
 	</RelativeLayout>
 </ScrollView>
