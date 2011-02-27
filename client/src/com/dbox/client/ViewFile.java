@@ -166,7 +166,7 @@ public class ViewFile extends Activity
 	                    } 
 	                    catch (ActivityNotFoundException e) {
 	                        Toast.makeText(ViewFile.this, 
-	                            "No Application Available to View PDF", 
+	                            "No Application Available to View Resource", 
 	                            Toast.LENGTH_SHORT).show();
 	                    }
 	            }

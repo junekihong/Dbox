@@ -1,7 +1,6 @@
 package com.dbox.client;
 
 import java.io.InputStream;
-import java.io.StringReader;
 import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -12,7 +11,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 public class XmlEngine
 {
@@ -26,6 +24,7 @@ public class XmlEngine
 		{
 			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			Document doc = db.parse(is);
+			is = null;
 			doc.getDocumentElement().normalize();
 			NodeList nodeList = doc.getElementsByTagName("Resource");
 			

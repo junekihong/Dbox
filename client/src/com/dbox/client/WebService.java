@@ -2,6 +2,7 @@ package com.dbox.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -12,8 +13,14 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
+
 import org.apache.http.entity.BasicHttpEntity;
+
+import org.apache.http.entity.StringEntity;
+
 import org.apache.http.impl.client.DefaultHttpClient;
+
+import com.dbox.client.Login.LoggedIn;
 
 public class WebService
 {
@@ -198,6 +205,7 @@ public class WebService
 		
 		return false;
 	}
+
 	public static boolean put ( String url, int port, String username, String password, String body)
 	{
 		try
@@ -249,4 +257,53 @@ public class WebService
 		
 		return false;
 	}
+
+
+	public static LoggedIn register(String host, int port, String username,
+			String password) {
+		try {
+        URL u = new URL(host);
+        String domain = u.getHost();
+
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        
+    	String url = ("http://" + domain + ":" + port + "/register");
+
+		// Create a connection to the server.
+		StringEntity xmlmsg = new StringEntity("<Registration>\n"+
+        						"<Username>"+username+"</Username>\n"+
+        						"<Password>"+password+"</Password>\n"+
+        						"</Registration>");
+
+		// Send the request and receive the response.
+    	HttpPut put = new HttpPut(url);
+    	put.setEntity(xmlmsg);
+		HttpResponse response = httpclient.execute(put);
+
+		System.out.println("REGISTER STATUS CODE:");
+		System.out.println(response.getStatusLine().getStatusCode());
+
+		httpclient.getConnectionManager().shutdown();
+		
+		// Check that registration was successful. It fails if the user already exists
+		if (response.getStatusLine().getStatusCode() == 200)
+		{
+			return Login.LoggedIn.SUCCESS;
+		}
+		else 
+		{
+			return Login.LoggedIn.FAILURE;
+		}
+		
+	}
+		catch (Exception e) {
+			e.printStackTrace();
+			
+			
+			return Login.LoggedIn.ERROR;
+		}
+		
+	}
+
+
 }
