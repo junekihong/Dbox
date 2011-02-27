@@ -112,6 +112,63 @@ public class Login extends Activity
 	    	}
 	    }
 	}
+
+	/** Task to register a new user, logging in when completed. */
+	private class RegisterTask extends AsyncTask<String, Integer, LoggedIn>
+	{
+		/**
+		 * Executes task on a background thread.
+		 */
+		@Override
+		protected LoggedIn doInBackground(String... data)
+		{
+			return WebService.register(mHost,mPort,mUsername,mPassword);
+		}
+
+		/**
+		 * Called on the UI thread after doInBackground has finished.
+		 */
+		@Override
+	    protected void onPostExecute(LoggedIn result)
+	    {
+	    	hideLoginDialog();
+	    	
+	    	switch (result)
+	    	{
+	    		case SUCCESS:
+	    			try
+					{
+						URL url = new URL(mHost);
+						String path = "http://" + url.getHost() + ":" + mPort + "/" + mUsername + "/";
+						
+		    			Bundle b = new Bundle();
+		    			b.putString("host", mHost);
+		    			b.putInt("port", mPort);
+		    			b.putString("username", mUsername);
+		    			b.putString("password", mPassword);
+		    			b.putString("path", path);
+		    			
+		    			Intent i = new Intent(Login.this,DirList.class);
+		    			i.putExtras(b);
+			    		startActivity(i);
+					}
+					catch (Exception e)
+					{
+						e.printStackTrace();
+					}
+	    			
+		    		break;
+	    		case FAILURE:
+	    			showErrorDialog("Registration Failed: The user already exists");
+	    			break;
+	    		case ERROR:
+	    			showErrorDialog("Could not connect to the host on the specified port.");
+	    			break;
+	    	}
+	    }
+	}
+
+	
 	
     /**
      * Called when the activity is first created.
@@ -165,6 +222,53 @@ public class Login extends Activity
     			}
     		}
         );
+        
+        //Registration: Uses the same inputs as Login, but first sends a registration request to the
+        // server to create a new user. If the registration is successful, proceed to log in.
+        Button register = (Button) findViewById(R.id.register_button);
+        register.setOnClickListener
+        (
+        	new OnClickListener()
+    		{
+    			public void onClick(View v)
+   				{
+    				// get the user input
+   					String host = ((EditText) findViewById(R.id.host_input)).getText().toString();
+   					String port = ((EditText) findViewById(R.id.port_input)).getText().toString();
+   					String username = ((EditText) findViewById(R.id.username_input)).getText().toString();
+   					String password = ((EditText) findViewById(R.id.password_input)).getText().toString();
+   					
+   					// check for input errors
+   					if (host.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid host.");
+   					}
+   					else if (port.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid port.");
+   					}
+   					else if (username.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid username.");
+   					}
+   					else if (password.equals(""))
+   					{
+   						showErrorDialog("You entered an invalid password.");
+   					}
+   					else
+   					{
+   						mHost = host;
+   						mPort = Integer.parseInt(port);
+   						mUsername = username;
+   						mPassword = password;
+   						
+   						showRegistrationDialog();
+   						new RegisterTask().execute(host,port,username,password);
+   					}
+    			}
+    		}
+        );
+        
     }
     
     /**
@@ -178,6 +282,19 @@ public class Login extends Activity
     	mLoginProgress.setMessage("Attempting logon to server.");
 		mLoginProgress.show();
     }
+    
+    /**
+     * Show the registration progress dialog.
+     * @return void
+     */
+    public void showRegistrationDialog()
+    {
+    	mLoginProgress = new ProgressDialog(this);
+    	mLoginProgress.setCancelable(false);
+    	mLoginProgress.setMessage("Attempting register with server.");
+		mLoginProgress.show();
+    }
+
     
     /**
      * Hide the login progress dialog.
