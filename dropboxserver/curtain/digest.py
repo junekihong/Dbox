@@ -96,7 +96,7 @@ class DigestAuthMixin(object):
 
             creds = get_creds_callback(self.params['username'])
             if not creds:
-                self.createAuthHeader()
+                return self.createAuthHeader()
             else:
                 expected_response = self.response(creds['auth_password'])
                 actual_response = self.params['response']
