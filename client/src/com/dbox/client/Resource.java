@@ -1,6 +1,16 @@
 package com.dbox.client;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.Date;
+
+import android.util.Base64;
+import android.webkit.MimeTypeMap;
+
 
 public class Resource
 {
@@ -21,6 +31,64 @@ public class Resource
 		this.size = size;
 		this.isDirectory = dir;
 	}
+	
+	public Resource(File file)
+	{
+		String name = file.getName();
+		
+		String ext;
+		int x = name.lastIndexOf(".");
+		if(x<0)
+			ext = "";
+		else
+			ext = name.substring(x);
+		
+		FileInputStream stream = null;
+		FileChannel channel = null;
+		byte[] bytes = null;
+		
+		try 
+		{
+	        stream = new FileInputStream(file);
+	        channel = stream.getChannel();
+	        int size = (int) channel.size();
+	        MappedByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, size);
+	        bytes = new byte[size];
+	        buffer.get(bytes);
+
+	    } 
+		catch (IOException e) 
+	    {
+	        e.printStackTrace();
+	    }
+		finally 
+		{
+			try 
+			{
+	            if (stream != null) 
+	            {
+	                stream.close();
+	            }
+	            if (channel != null) 
+	            {
+	                channel.close();
+	            }
+	        } 
+			catch (IOException e) 
+	        {
+	            e.printStackTrace();
+	        }
+	    }
+		
+		this.name = name;
+		this.url = file.getAbsolutePath();
+		this.type = MimeTypeMap.getSingleton().getExtensionFromMimeType(ext);
+		this.date = new Date(file.lastModified());
+		this.size = (int) file.length();
+		this.isDirectory = file.isDirectory();
+		this.content = Base64.encodeToString(bytes, Base64.DEFAULT);
+	}
+	
 	
 	public String name()
 	{

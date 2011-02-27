@@ -1,8 +1,6 @@
 package com.dbox.client;
 
-import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -226,6 +224,9 @@ public class DirList extends Activity
         return true;
     }
     
+    //----------------------------------------------------------------------------------------
+    
+    
     public boolean onOptionsItemSelected(MenuItem item)
     {
         // Handle item selection
@@ -238,6 +239,11 @@ public class DirList extends Activity
     		delete();
     		return true;
     	case R.id.upload:
+    		Bundle b = new Bundle();
+    		b.putString("path", mUrl);
+    		Intent i = new Intent(this, Upload.class);
+    		i.putExtras(b);
+    		startActivity(i);
     		return true;
         }
         return false;
