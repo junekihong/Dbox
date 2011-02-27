@@ -1,6 +1,8 @@
 package com.dbox.client;
 
+import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -95,6 +97,8 @@ public class DirList extends Activity
 	        
 	        TextView t = (TextView) findViewById(R.id.path);
 	        t.setText(new URL(mUrl).getPath());
+	        
+	        System.out.println(mUrl);
 	        
 	        ls();
         }

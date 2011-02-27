@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/refresh"
+          android:icon="@drawable/ic_menu_refresh"
+          android:title="Refresh" />
+    <group android:id="@+id/delete_group">
+    <item android:id="@+id/delete"
+          android:icon="@drawable/ic_menu_delete"
+          android:title="Delete" />
+    </group>
+</menu>

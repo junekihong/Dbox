@@ -1,9 +1,9 @@
 package com.dbox.client;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -11,7 +11,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 public class WebService
@@ -92,13 +91,12 @@ public class WebService
 			HttpResponse response = httpclient.execute(httpget);
 			HttpEntity entity = response.getEntity();
 
-			System.out.println("LOGIN STATUS CODE:");
-			System.out.println(response.getStatusLine().getStatusCode());
-
 			// Check that login was successful.
 			if (response.getStatusLine().getStatusCode() == 200)
 			{
 				InputStream responseStream = entity.getContent();
+				
+				/*
 				ByteArrayOutputStream responseData = new ByteArrayOutputStream();
 				int ch;
 
@@ -108,7 +106,18 @@ public class WebService
 					responseData.write(ch);
 				}
 				
-				return XmlEngine.xmlToResource(new String(responseData.toByteArray()));
+				// HttpEntity instance is no longer needed, so we signal that resources 
+				// should be deallocated
+				if (entity != null)
+				{
+					entity.consumeContent();
+				}
+				
+				String xml = new String(responseData.toByteArray());
+				responseData = null;
+				*/
+				
+				return XmlEngine.xmlToResource(responseStream);
 			}
 
 			// HttpEntity instance is no longer needed, so we signal that resources 

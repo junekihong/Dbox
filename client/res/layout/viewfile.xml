@@ -91,15 +91,13 @@
 				android:background="#FF909090"
 			/>
 		</TableLayout>
-
-		<TextView
-			android:id="@+id/content"
+		
+		<Button
+			android:id="@+id/viewButton"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:layout_column="1"
+			android:text="Preview File"
 			android:layout_below="@+id/table"
-			android:text=""
-			android:padding="3dip"
 		/>
 	</RelativeLayout>
 </ScrollView>

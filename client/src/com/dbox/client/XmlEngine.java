@@ -1,5 +1,6 @@
 package com.dbox.client;
 
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Date;
 
@@ -15,7 +16,8 @@ import org.xml.sax.InputSource;
 
 public class XmlEngine
 {
-	public static Resource[] xmlToResource(String xml)
+	//public static Resource[] xmlToResource(String xml)
+	public static Resource[] xmlToResource(InputStream is)
 	{
 		Resource[] result = null;
 		int resultSize = 0;
@@ -23,7 +25,7 @@ public class XmlEngine
 		try
 		{
 			DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			Document doc = db.parse(new InputSource(new StringReader(xml)));
+			Document doc = db.parse(is);
 			doc.getDocumentElement().normalize();
 			NodeList nodeList = doc.getElementsByTagName("Resource");
 			

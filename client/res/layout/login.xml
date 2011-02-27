@@ -90,7 +90,7 @@
 				android:layout_marginTop="4dp" 
 				android:layout_marginRight="15dp" 
 				android:nextFocusDown="@+id/username_input"
-				android:text="8043"
+				android:text="8042"
 			/>
 		</LinearLayout>
 
@@ -118,6 +118,7 @@
 			android:layout_marginLeft="15dp" 
 			android:layout_marginRight="15dp" 
 			android:nextFocusDown="@+id/password_input"
+			android:text="foo"
 		/>
 
 		<TextView
@@ -143,6 +144,7 @@
 			android:layout_marginTop="4dp"
 			android:layout_marginLeft="15dp" 
 			android:layout_marginRight="15dp" 
+			android:text="42"
 		/>
 
 		<Button
