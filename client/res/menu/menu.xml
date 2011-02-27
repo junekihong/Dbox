@@ -3,6 +3,11 @@
     <item android:id="@+id/refresh"
           android:icon="@drawable/ic_menu_refresh"
           android:title="Refresh" />
+    <group android:id="@+id/upload_group">
+    <item android:id="@+id/upload" 
+          android:icon="@drawable/ic_menu_share"
+          android:title="Upload" />
+    </group>
     <group android:id="@+id/delete_group">
     <item android:id="@+id/delete"
           android:icon="@drawable/ic_menu_delete"

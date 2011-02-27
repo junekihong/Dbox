@@ -237,6 +237,8 @@ public class DirList extends Activity
     	case R.id.delete:
     		delete();
     		return true;
+    	case R.id.upload:
+    		return true;
         }
         return false;
     }
