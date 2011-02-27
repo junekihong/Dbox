@@ -77,7 +77,7 @@
 				android:layout_marginLeft="15dp" 
 				android:layout_marginRight="15dp" 
 				android:nextFocusDown="@+id/port_input"
-				android:text="http://eridani.acm.jhu.edu"
+				android:text="eridani.acm.jhu.edu"
 			/>
 			<EditText 
 				android:id="@+id/port_input" 

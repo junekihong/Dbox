@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/home_group">
+    <item android:id="@+id/home"
+          android:icon="@drawable/ic_menu_home"
+          android:title="Home" />
+    </group>
     <item android:id="@+id/refresh"
           android:icon="@drawable/ic_menu_refresh"
           android:title="Refresh" />
-    <group android:id="@+id/upload_group">
-    <item android:id="@+id/upload" 
-          android:icon="@drawable/ic_menu_share"
-          android:title="Upload" />
-    </group>
     <group android:id="@+id/delete_group">
     <item android:id="@+id/delete"
           android:icon="@drawable/ic_menu_delete"
           android:title="Delete" />
     </group>
+    <group android:id="@+id/upload_group">
+    <item android:id="@+id/upload" 
+          android:icon="@drawable/ic_menu_share"
+          android:title="Upload File" />
+    <item android:id="@+id/upload_dir" 
+          android:icon="@drawable/ic_menu_archive"
+          android:title="Upload Folder" />
+    </group>
+    <item android:id="@+id/password"
+          android:icon="@drawable/ic_menu_account_list"
+          android:title="Change Password" />
+    <item android:id="@+id/logout"
+          android:icon="@drawable/ic_menu_close"
+          android:title="Logout" />
 </menu>

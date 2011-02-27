@@ -1,8 +1,6 @@
 package com.dbox.client;
 
-import java.net.URI;
 import java.net.URL;
-import java.net.URLEncoder;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -18,12 +16,14 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class DirList extends Activity
 {
 	public static boolean refreshOnResume = false;
+	public static boolean finishUnlessHome = false;
 	
     private ListView list;
     private DirListAdapter adapter;
@@ -35,6 +35,7 @@ public class DirList extends Activity
     private Resource[] ls;
     private ProgressDialog mProgressDialog;
     private boolean deletedChildResource = false;
+    private URL mUrlObj;
     
 	private class LsTask extends AsyncTask<String, Integer, Integer>
 	{
@@ -44,7 +45,18 @@ public class DirList extends Activity
 		@Override
 		protected Integer doInBackground(String... data)
 		{
-			ls = WebService.get(mUrl,mPort,mUsername,mPassword);
+			try
+			{
+				ls = WebService.get(mUrl,mPort,mUsername,mPassword);
+			}
+			catch (HttpException e)
+			{
+				return -2;
+			}
+			catch (Exception e)
+			{
+				return -1;
+			}
 			return 1;
 		}
 
@@ -54,7 +66,19 @@ public class DirList extends Activity
 		@Override
 	    protected void onPostExecute(Integer result)
 	    {
-			onServerResponse();
+			if ( result == 1 )
+			{
+				onServerResponse();
+			}
+			else
+			{
+				if (result == -2)
+					printMessage("Could not connect to the host on the specified port.");
+				else
+					printMessage("Invalid login credentials. Please re-enter your username and password.");
+				
+				openLoginScreen();
+			}
 	    }
 	}
 	
@@ -66,7 +90,18 @@ public class DirList extends Activity
 		@Override
 		protected Integer doInBackground(String... data)
 		{
-			WebService.delete(mUrl,mPort,mUsername,mPassword);
+			try
+			{
+				WebService.delete(mUrl,mPort,mUsername,mPassword);
+			}
+			catch (HttpException e)
+			{
+				return -2;
+			}
+			catch (Exception e)
+			{
+				return -1;
+			}
 			return 1;
 		}
 
@@ -76,7 +111,19 @@ public class DirList extends Activity
 		@Override
 	    protected void onPostExecute(Integer result)
 	    {
-			onDeleteResponse();
+			if ( result == 1 )
+			{
+				onDeleteResponse();
+			}
+			else
+			{
+				if (result == -2)
+					printMessage("Could not connect to the host on the specified port.");
+				else
+					printMessage("Invalid login credentials. Please re-enter your username and password.");
+				
+				openLoginScreen();
+			}
 	    }
 	}
 
@@ -95,10 +142,10 @@ public class DirList extends Activity
 	        mUrl = bundle.getString("path");
 	        mPort = bundle.getInt("port");
 	        
-	        TextView t = (TextView) findViewById(R.id.path);
-	        t.setText(new URL(mUrl).getPath());
+	        mUrlObj = new URL(mUrl);
 	        
-	        System.out.println(mUrl);
+	        TextView t = (TextView) findViewById(R.id.path);
+	        t.setText(mUrlObj.getPath());
 	        
 	        ls();
         }
@@ -218,8 +265,11 @@ public class DirList extends Activity
         
         try
         {
-        	if (new URL(mUrl).getPath().equals("/" + mUsername + "/")) 
+        	if (isHomeDir())
+        	{
+        		menu.setGroupEnabled(R.id.home_group, false);
         		menu.setGroupEnabled(R.id.delete_group, false);
+        	}
         }
         catch(Exception e) {}
         
@@ -239,12 +289,36 @@ public class DirList extends Activity
     		return true;
     	case R.id.upload:
     		return true;
+    	case R.id.logout:
+    		openLoginScreen();
+    		return true;
+    	case R.id.home:
+    		home();
+    		return true;
         }
         return false;
     }
     
+    public boolean isHomeDir()
+    {
+    	return mUrlObj.getPath().equals("/" + mUsername + "/");
+    }
+    
     public void onWindowFocusChanged(boolean hasFocus)
     {
+    	if (finishUnlessHome)
+    	{
+    		if (isHomeDir())
+    		{
+    			finishUnlessHome = false;
+    		}
+    		else
+    		{
+    			finish();
+    		}
+    		return;
+    	}
+    	
     	if (hasFocus && refreshOnResume)
     		ls();
     }
@@ -269,16 +343,61 @@ public class DirList extends Activity
 		}
 		else
 		{
+			b.putParcelable("resource",adapter.ls[position]);
 			Intent i = new Intent(DirList.this,ViewFile.class);
 			i.putExtras(b);
 			startActivity(i); 
 		}
     }
     
+    public void openLoginScreen()
+    {
+		Intent i = new Intent(DirList.this,Login.class);
+		i.putExtra("port", mPort);
+		i.putExtra("path", mUrl);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		//FLAG_ACTIVITY_CLEAR_TASK
+		startActivity(i);
+		finish();
+    }
+    
+    public void printMessage(String message)
+    {
+    	Toast.makeText(this,message, Toast.LENGTH_LONG).show();
+    }
+    
+    public void home()
+    {
+    	DirList.finishUnlessHome = true;
+    	finish();
+    	/*
+    	try
+    	{
+	    	String home = "http://" + new URL(mUrl).getHost() + ":" + mPort + "/" + mUsername + "/";
+	    	
+			Intent i = new Intent(DirList.this,DirList.class);
+			Bundle b = new Bundle();
+			b.putString("username",mUsername);
+			b.putString("password",mPassword);
+			b.putString("path", home);
+			b.putInt("port",mPort);
+			i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			//i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			i.putExtras(b);
+			startActivity(i);
+			finish();
+    	}
+    	catch (Exception e) {}
+    	*/
+    }
+    
     @Override
     public void onDestroy()
     {
-        list.setAdapter(null);
+    	if (list != null)
+    		list.setAdapter(null);
+    	
         super.onDestroy();
     }
 }

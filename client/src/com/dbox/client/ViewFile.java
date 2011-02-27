@@ -28,7 +28,7 @@ public class ViewFile extends Activity
     private String mUsername;
     private String mPassword;
     private int mPort;
-    private Resource[] ls;
+    private Resource file;
     private ProgressDialog mProgressDialog;
     private String mLocalPath;
     
@@ -40,7 +40,18 @@ public class ViewFile extends Activity
 		@Override
 		protected Integer doInBackground(String... data)
 		{
-			ls = WebService.get(mUrl,mPort,mUsername,mPassword);
+			try
+			{
+				file = WebService.get(mUrl,mPort,mUsername,mPassword)[0];
+			} 
+			catch (HttpException e)
+			{
+				return -2;
+			}
+			catch (Exception e)
+			{
+				return -1;
+			}
 			return 1;
 		}
 
@@ -50,7 +61,19 @@ public class ViewFile extends Activity
 		@Override
 	    protected void onPostExecute(Integer result)
 	    {
-			onServerResponse();
+			if ( result == 1 )
+			{
+				onServerResponse();
+			}
+			else
+			{
+				if (result == -2)
+					printMessage("Could not connect to the host on the specified port.");
+				else
+					printMessage("Invalid login credentials. Please re-enter your username and password.");
+				
+				openLoginScreen();
+			}
 	    }
 	}
 	
@@ -62,7 +85,18 @@ public class ViewFile extends Activity
 		@Override
 		protected Integer doInBackground(String... data)
 		{
-			WebService.delete(mUrl,mPort,mUsername,mPassword);
+			try
+			{
+				WebService.delete(mUrl,mPort,mUsername,mPassword);
+			}
+			catch (HttpException e)
+			{
+				return -2;
+			}
+			catch (Exception e)
+			{
+				return -1;
+			}
 			return 1;
 		}
 
@@ -72,7 +106,19 @@ public class ViewFile extends Activity
 		@Override
 	    protected void onPostExecute(Integer result)
 	    {
-			onDeleteResponse();
+			if ( result == 1 )
+			{
+				onDeleteResponse();
+			}
+			else
+			{
+				if (result == -2)
+					printMessage("Could not connect to the host on the specified port.");
+				else
+					printMessage("Invalid login credentials. Please re-enter your username and password.");
+				
+				openLoginScreen();
+			}
 	    }
 	}
 
@@ -80,7 +126,7 @@ public class ViewFile extends Activity
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.dirlist);
+        setContentView(R.layout.viewfile);
         
         Bundle bundle = getIntent().getExtras();
         
@@ -88,12 +134,26 @@ public class ViewFile extends Activity
         {
 	        mUsername = bundle.getString("username");
 	        mPassword = bundle.getString("password");
-	        mUrl = bundle.getString("path");
+	        mUrl = bundle.getString("path").replace(" ", "%20");;
 	        mPort = bundle.getInt("port");
 	        
-	        mUrl.replace(" ", "%20");
+	        mLocalPath = new URL(mUrl).getPath();
 	        
-	        get();
+	        File root = Environment.getExternalStorageDirectory();
+	        File local = new File(root,"downloads/" + mLocalPath);
+	        
+	        mLocalUri = Uri.fromFile(local);
+	        
+	        if (local.exists())
+	        {
+	        	file = bundle.getParcelable("resource");
+	        	
+	        	buildDisplay(true);
+	        }
+	        else
+	        {
+	        	get();
+	        }
         }
         catch (Exception e)
         {
@@ -119,59 +179,86 @@ public class ViewFile extends Activity
     	finish();
     }
     
+    public void buildDisplay(boolean showCachedMessage)
+    {
+    	Button refresh = (Button) findViewById(R.id.refreshButton);
+    	refresh.setVisibility(View.VISIBLE);
+    	refresh.setOnClickListener
+    	(
+    			new View.OnClickListener()
+    			{
+					@Override
+					public void onClick(View v)
+					{
+						get();
+					}
+				}
+    	);
+    	
+    	TextView refreshText = (TextView) findViewById(R.id.refreshText);
+    	
+    	if (showCachedMessage)
+    		refreshText.setVisibility(View.VISIBLE);
+    	else
+    		refreshText.setVisibility(View.GONE);
+    	
+    	setText(file.name(), file.type(), file.size(), file.dateFormatted());
+    	
+    	Button button = (Button) findViewById(R.id.viewButton);
+        button.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    
+                    if (file.type().contains("text/"))
+                    	intent.setDataAndType(mLocalUri, "text/plain");
+                    else
+                    	intent.setDataAndType(mLocalUri, file.type());
+                    
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+                    try
+                    {
+                        startActivity(intent);
+                    } 
+                    catch (ActivityNotFoundException e)
+                    {
+                        Toast.makeText(ViewFile.this,"Could not find an application to view " + file.type() + " files.", Toast.LENGTH_LONG).show();
+                    }
+            }
+        });
+    }
+    
+    public void setText(String n, String t, int s, String d)
+    {
+   		TextView title = (TextView) findViewById(R.id.title);
+		TextView name = (TextView) findViewById(R.id.name);
+    	TextView type = (TextView) findViewById(R.id.type);
+    	TextView size = (TextView) findViewById(R.id.filesize);
+    	TextView date = (TextView) findViewById(R.id.date);
+    	
+    	title.setText("Viewing File: " + n);
+    	name.setText(n);
+    	type.setText(t);
+    	size.setText( ((double) s)/1000 + "kb");
+    	date.setText(d);
+    }
+    
     public void onServerResponse()
     {
-    	setContentView(R.layout.viewfile);
-    	
-    	Resource file = ls[0];
-    	
     	if (file != null)
     	{
-    		TextView title = (TextView) findViewById(R.id.title);
-    		TextView name = (TextView) findViewById(R.id.name);
-	    	TextView type = (TextView) findViewById(R.id.type);
-	    	TextView size = (TextView) findViewById(R.id.filesize);
-	    	TextView date = (TextView) findViewById(R.id.date);
-	    	
-	    	title.setText("Viewing File: " + file.name());
-	    	name.setText(file.name());
-	    	type.setText(file.type());
-	    	size.setText( ((double)file.size())/1000 + "kb");
-	    	date.setText(file.dateFormatted());
-	    	
-	    	try
-	    	{
-	    		mLocalPath = new URL(mUrl).getPath();
-	    	}
-	    	catch (Exception e) { }
-	    	
-	    	//System.out.println(file.url());
-	    	System.out.println(mLocalPath);
+    		setText(file.name(), file.type(), file.size(), file.dateFormatted());
 	    	
 	    	if (file.type().equals("text/plain"))
 	    		writeFileToDisk(mLocalPath,file.content(),false);
 	    	else
 	    		writeFileToDisk(mLocalPath,file.content(),true);
-	    	
-	    	Button button = (Button) findViewById(R.id.viewButton);
-	        button.setOnClickListener(new View.OnClickListener() {
-	            @Override
-	            public void onClick(View v) {
-	                    Intent intent = new Intent(Intent.ACTION_VIEW);
-	                    intent.setDataAndType(mLocalUri, ls[0].type());
-	                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-	                    try {
-	                        startActivity(intent);
-	                    } 
-	                    catch (ActivityNotFoundException e) {
-	                        Toast.makeText(ViewFile.this, 
-	                            "No Application Available to View Resource", 
-	                            Toast.LENGTH_SHORT).show();
-	                    }
-	            }
-	        });
     	}
+    	
+    	buildDisplay(false);
     	
     	hideProgressDialog();
     }
@@ -206,6 +293,8 @@ public class ViewFile extends Activity
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         
+        menu.setGroupVisible(R.id.upload_group, false);
+        
         return true;
     }
     
@@ -223,24 +312,33 @@ public class ViewFile extends Activity
     	case R.id.delete:
     		delete();
     		return true;
+    	case R.id.logout:
+    		openLoginScreen();
+    		return true;
+    	case R.id.home:
+    		home();
+    		return true;
         }
         return false;
     }
     
-    public boolean writeFileToDisk(String path, String data, boolean encoded)
+    /**
+     * Write file to disk.  
+     * @param path the file path
+     * @param data the file data
+     * @param encoded true if data[] has been encoded as base64, false otherwise 
+     * @return true if the file was written successfully, false otherwise
+     */
+    public boolean writeFileToDisk(String path, byte[] data, boolean encoded)
     {
     	try
     	{
-    		byte[] decoded;
+    		byte[] decoded = data;
     		
     		if (encoded)
-    		{
     			decoded = Base64.decode(data, Base64.DEFAULT);	
-    		}
-    		else
-    		{
-    			decoded = data.getBytes();
-    		}
+    		
+    		data = null;
     		
     		File root = Environment.getExternalStorageDirectory();
 
@@ -249,11 +347,13 @@ public class ViewFile extends Activity
     			File f = new File(root, "downloads/" + path);
     			File x = new File(f.getParent());
     			x.mkdirs();
-    			mLocalUri = Uri.fromFile(f);
+    			x = null;
     			FileOutputStream writer = new FileOutputStream(f);
     			writer.write(decoded);
-    			
     			writer.close();
+    			writer = null;
+    			f = null;
+    			root = null;
     			return true;
     		}
     	}
@@ -263,5 +363,28 @@ public class ViewFile extends Activity
     	}
 
     	return false;
+    }
+    
+    public void printMessage(String message)
+    {
+    	Toast.makeText(this,message, Toast.LENGTH_LONG).show();
+    }
+    
+    public void home()
+    {
+    	DirList.finishUnlessHome = true;
+    	finish();
+    }
+    
+    public void openLoginScreen()
+    {
+		Intent i = new Intent(ViewFile.this,Login.class);
+		i.putExtra("port", mPort);
+		i.putExtra("path", mUrl);
+		i.putExtra("isDir", false);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(i);
+		finish();
     }
 }
