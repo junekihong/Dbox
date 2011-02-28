@@ -1,5 +1,6 @@
 package com.dbox.client;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 
@@ -10,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -335,14 +337,7 @@ public class DirList extends Activity
     		delete();
     		return true;
     	case R.id.upload:
-    		Bundle b = new Bundle();
-    		b.putString("path", mUrl);
-    		b.putString("username",mUsername);
-    		b.putString("password", mPassword);
-    		b.putInt("port",mPort);
-    		Intent i = new Intent(this, Upload.class);
-    		i.putExtras(b);
-    		startActivity(i);
+    		upload();
     		return true;
     	case R.id.upload_dir:
     		makeDir();
@@ -447,6 +442,21 @@ public class DirList extends Activity
     {
     	DirList.finishUnlessHome = true;
     	finish();
+    }
+    
+    public void upload()
+    {
+    	File uploads = new File(Environment.getExternalStorageDirectory(),"Uploads/");
+		Bundle b = new Bundle();
+		b.putString("uploadPath", mUrl);
+		b.putString("path", uploads.getAbsolutePath());
+		b.putString("username",mUsername);
+		b.putString("password", mPassword);
+		b.putBoolean("isRoot", true);
+		b.putInt("port",mPort);
+		Intent i = new Intent(this, Upload.class);
+		i.putExtras(b);
+		startActivity(i);
     }
     
     public void makeDir()

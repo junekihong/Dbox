@@ -111,7 +111,9 @@ public class Resource implements Parcelable, Comparable<Resource>
 		this.date = new Date(file.lastModified());
 		this.size = (int) file.length();
 		this.isDirectory = file.isDirectory();
-		this.content = Base64.encode(bytes, Base64.DEFAULT);
+		
+		if (!file.isDirectory())
+			this.content = bytes; //Base64.encode(bytes, Base64.DEFAULT);
 	}
 	
 	public String name()

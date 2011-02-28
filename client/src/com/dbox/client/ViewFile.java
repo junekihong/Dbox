@@ -30,6 +30,7 @@ public class ViewFile extends Activity
     private Resource file;
     private ProgressDialog mProgressDialog;
     private String mLocalPath;
+    private URL mUrlObj;
     
 	private class DownloadFileTask extends AsyncTask<String, Integer, Integer>
 	{
@@ -136,7 +137,8 @@ public class ViewFile extends Activity
 	        mUrl = bundle.getString("path").replace(" ", "%20");;
 	        mPort = bundle.getInt("port");
 	        
-	        mLocalPath = new URL(mUrl).getPath();
+	        mUrlObj = new URL(mUrl);
+	        mLocalPath = mUrlObj.getPath();
 	        
 	        File root = Environment.getExternalStorageDirectory();
 	        File local = new File(root,"downloads/" + mLocalPath);
@@ -317,6 +319,9 @@ public class ViewFile extends Activity
     	case R.id.home:
     		home();
     		return true;
+    	case R.id.password:
+    		openChangePasswordScreen();
+    		return true;
         }
         return false;
     }
@@ -373,6 +378,21 @@ public class ViewFile extends Activity
     {
     	DirList.finishUnlessHome = true;
     	finish();
+    }
+    
+    public void openChangePasswordScreen()
+    {
+		Intent i = new Intent(this,Password.class);
+		Bundle b = new Bundle();
+		b.putString("username",mUsername);
+		b.putString("password",mPassword);
+		b.putString("host","http://" + mUrlObj.getHost());
+		b.putInt("port", mPort);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		i.putExtras(b);
+		startActivity(i);
+		finish();
     }
     
     public void openLoginScreen()

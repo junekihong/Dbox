@@ -160,8 +160,8 @@ public class XmlEngine
 		sb.append("<sec>" + x.date().getSeconds() + "</sec>");
 		sb.append("</ResourceDate>");
 		
-	//	sb.append("<ResourceContent>"+Base64.encodeToString(x.content(), Base64.DEFAULT)+"</ResourceContent>");
-		sb.append("<ResourceContent>"+new String(x.content())+"</ResourceContent>");
+		sb.append("<ResourceContent>"+Base64.encodeToString(x.content(), Base64.DEFAULT)+"</ResourceContent>");
+		//sb.append("<ResourceContent>"+new String(x.content())+"</ResourceContent>");
 		
 		sb.append("<ResourceEncoding>" + "Base64" + "</ResourceEncoding>");
 		

@@ -3,15 +3,23 @@ package com.dbox.client;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Date;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 
 /**
@@ -20,15 +28,19 @@ import android.widget.AdapterView.OnItemClickListener;
 
 public class Upload extends Activity
 {
+	public static boolean killMe = false;
+	
 	private ListView listView;
 	private DirListAdapter adapter;
     private String mUrl;
+    private String mPath;
     private String mUsername;
     private String mPassword;
     private int mPort;
     private Resource thing;
     private Resource[] resources;
     private ProgressDialog mProgressDialog;
+    private boolean isRoot=false;
     
 	/**
 	 * Asynchronous Upload Task
@@ -59,7 +71,6 @@ public class Upload extends Activity
 	    protected void onPostExecute(Boolean result)
 	    {
 	    	onUploadResponse();
-			
 	    }
 	}
 	
@@ -74,20 +85,25 @@ public class Upload extends Activity
 		@Override
 		protected Boolean doInBackground(String... data)
 		{
-			File f = Environment.getExternalStorageDirectory();
-			
-			File Uploads = new File(f,"Uploads/");
+			File Uploads = new File(mPath);
 			
 			if (!Uploads.exists())
 				Uploads.mkdir();
 			
 			File[] list= Uploads.listFiles();
 			
-			int listLength =list.length;
-			if (listLength==0)
-				System.out.println("LIST IS EMPTY");
 			
-			resources= new Resource[listLength];
+			
+			if (!isRoot)
+			{
+				resources= new Resource[list.length+1];
+				File parent = new File(Uploads.getParent());
+				resources[list.length] = new Resource("..",Uploads.getParent(),"",new Date(parent.lastModified()),0,true);
+			}
+			else
+			{
+				resources= new Resource[list.length];
+			}
 			
 			for(int i = 0; i < list.length; i++)
 			{
@@ -118,21 +134,24 @@ public class Upload extends Activity
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.dirlist);
+		setContentView(R.layout.upload);
 		
 		Bundle bundle = getIntent().getExtras();
 		
 		try
 		{
-			mUrl = bundle.getString("path");
+			mUrl = bundle.getString("uploadPath");
+			mPath = bundle.getString("path");
 			mPort = bundle.getInt("port");
 			mUsername = bundle.getString("username");
 	        mPassword = bundle.getString("password");
+	        isRoot = bundle.getBoolean("isRoot");
+	        
+	        TextView t = (TextView) findViewById(R.id.path);
+	        t.setText(mPath);
 			
-	        showProgressDialog("Reading from SDCard/Uploads/");
+	        showProgressDialog("Reading from " + mPath);
 	        new LsTask().execute("");
-			//buildList();
-			//put();
 		}
 		catch(Exception e)
 		{
@@ -142,6 +161,8 @@ public class Upload extends Activity
 	
 	public void buildList()
 	{
+		Arrays.sort(resources);
+		
 		adapter = new DirListAdapter(Upload.this,resources);
 		listView=(ListView)findViewById(R.id.list);
 		listView.setAdapter(adapter);
@@ -156,7 +177,32 @@ public class Upload extends Activity
 				public void onItemClick(AdapterView<?> a, View v, int position, long id)
 				{
 					thing = resources[position];
-					put();
+					
+					if (thing.isDirectory())
+					{
+						if (thing.name().equals(".."))
+						{
+							finish();
+						}
+						else
+						{
+					    	File uploads = new File(mPath + "/" + thing.name());
+							Bundle b = new Bundle();
+							b.putString("uploadPath", mUrl);
+							b.putString("path", uploads.getAbsolutePath());
+							b.putString("username",mUsername);
+							b.putString("password", mPassword);
+							b.putBoolean("isRoot", false);
+							b.putInt("port",mPort);
+							Intent i = new Intent(Upload.this, Upload.class);
+							i.putExtras(b);
+							startActivity(i);
+						}
+					}
+					else
+					{
+						put();
+					}
 				}
 			}
 		);
@@ -177,9 +223,24 @@ public class Upload extends Activity
 		
 		//later: say "would you like to upload another file?"
 		
-		finish();
+		new AlertDialog.Builder(this)
+        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setTitle("Upload Complete")
+        .setMessage("Would you like to upload another file?")
+        .setPositiveButton("Yes", null)
+        .setNegativeButton("No",new DialogInterface.OnClickListener()
+        {
+            @Override
+            public void onClick(DialogInterface dialog, int which)
+            {
+            	DirList.refreshOnResume=true;
+        		killMe=true;		
+        		finish();  
+            }
+
+        })
+        .show();
 	}
-	
 	
 	/**
 	 * Show the login progress dialog
@@ -204,15 +265,38 @@ public class Upload extends Activity
 		mProgressDialog = null;
 	}
 	
+	   public boolean onCreateOptionsMenu(Menu menu)
+	    {
+	        MenuInflater inflater = getMenuInflater();
+	        inflater.inflate(R.menu.upload, menu);	        
+	        return true;
+	    }
+	    
+	    
+	    public boolean onOptionsItemSelected(MenuItem item)
+	    {
+	        // Handle item selection
+	        switch (item.getItemId())
+	        {
+	    	case R.id.return_to_server:
+	    		DirList.refreshOnResume=true;
+	    		if (!isRoot)
+	    			killMe = true;
+	    		
+	    		finish();
+	    		return true;
+	        }
+	        return false;
+	    }
 	
-	
-	
-	
-	
-	
-	
-	
+    public void onWindowFocusChanged(boolean hasFocus)
+    {
+    	if (killMe)
+    	{
+    		if (isRoot)
+    			killMe = false;
+    		
+    		finish();
+    	}
+    }
 }
-	
-	
-

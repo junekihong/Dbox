@@ -7,9 +7,9 @@
         android:id="@+id/empty"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
-        android:text="This directory is empty. You can upload files by pressing 'menu' and 'upload'."
+        android:text="Pressing on a directory will open it.\nPressing on a file will upload it.\n"
         android:gravity="center_horizontal"
-        android:visibility="gone"
+        android:visibility="visible"
     />
     <ListView
         android:id="@+id/list"
