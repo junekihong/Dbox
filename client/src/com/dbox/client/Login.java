@@ -16,6 +16,7 @@ import android.widget.EditText;
 
 /**
  * Login Activity
+ * Enables the user to login or register with the server. 
  */
 
 public class Login extends Activity
@@ -64,6 +65,7 @@ public class Login extends Activity
 		@Override
 		protected LoggedIn doInBackground(String... data)
 		{
+			// register and return the server response
 			return WebService.register(mHost,mPort,mUsername,mPassword);
 		}
 
@@ -73,23 +75,25 @@ public class Login extends Activity
 		@Override
 	    protected void onPostExecute(LoggedIn result)
 	    {
+			// dismiss the progress dialog
 	    	hideProgressDialog();
 	    	
+	    	// switch based on the result
 	    	switch (result)
 	    	{
+	    		// registration was successful
 	    		case SUCCESS:
 	    			try
 					{
-						URL url = new URL(mHost);
-						String path = "http://" + url.getHost() + ":" + mPort + "/" + mUsername + "/";
-						
-		    			Bundle b = new Bundle();
+						// create a bundle to pass to DirList
+	    				Bundle b = new Bundle();
 		    			b.putString("host", mHost);
 		    			b.putInt("port", mPort);
 		    			b.putString("username", mUsername);
 		    			b.putString("password", mPassword);
-		    			b.putString("path", path);
+		    			b.putString("path", "http://" + new URL(mHost).getHost() + ":" + mPort + "/" + mUsername + "/");
 		    			
+		    			// open the DirList activity
 		    			Intent i = new Intent(Login.this,DirList.class);
 		    			i.putExtras(b);
 			    		startActivity(i);
@@ -100,9 +104,13 @@ public class Login extends Activity
 					}
 	    			
 		    		break;
+		    		
+		    	// user already exists
 	    		case FAILURE:
 	    			showErrorDialog("Registration Failed: The user already exists");
 	    			break;
+	    		
+	    		// http connection error
 	    		case ERROR:
 	    			showErrorDialog("Could not connect to the host on the specified port.");
 	    			break;
@@ -116,30 +124,39 @@ public class Login extends Activity
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+    	// call parent and set the content view
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         
+        // check to see if a bundle has been passed
+        // to the activity
         Bundle b = getIntent().getExtras();
         
+        // check to see if the bundle exists
         if (b != null)
         {
-        	String url = b.getString("path");
-        	mPort = b.getInt("port");
-        	
-        	if (url != null)
+        	// check to see if path and port were passed        	
+        	if (b.containsKey("path") && b.containsKey("port"))
         	{
+        		// get the path and port
+            	String url = b.getString("path");
+            	mPort = b.getInt("port");
+            	
+            	// parse out the host
         		String h = "";
-        		
         		try { h = new URL(url).getHost(); } catch (Exception e) {}
         		
+        		// set the host
 	        	EditText host = (EditText) findViewById(R.id.host_input);
 	        	host.setText(h);
 	        	
+	        	// set the port
 	        	EditText port = (EditText) findViewById(R.id.port_input);
 	        	port.setText("" + mPort);
         	}
         }
         
+        // set a listener for the login button
         Button login = (Button) findViewById(R.id.login_button);
         login.setOnClickListener
         (
@@ -196,6 +213,10 @@ public class Login extends Activity
         );
     }
     
+    /**
+     * Check the user input
+     * @return true if the input is valid, false otherwise
+     */
     public boolean checkInput()
     {
     	boolean valid = true;
@@ -252,6 +273,10 @@ public class Login extends Activity
 		mProgress.show();
     }
     
+    /**
+     * Hide the progress dialog
+     * @return void
+     */
     public void hideProgressDialog()
     {
     	mProgress.dismiss();

@@ -19,7 +19,7 @@
           android:title="Upload File" />
     <item android:id="@+id/upload_dir" 
           android:icon="@drawable/ic_menu_archive"
-          android:title="Upload Folder" />
+          android:title="Create Folder" />
     </group>
     <item android:id="@+id/password"
           android:icon="@drawable/ic_menu_account_list"
