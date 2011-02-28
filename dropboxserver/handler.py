@@ -80,7 +80,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 
 		
 		if not realpath.startswith(userdir):
-			raise tornado.web.HTTPError(403,"Fobidden")
+			raise tornado.web.HTTPError(403,"Forbidden")
 		if not os.path.isdir(realdirectory):
 			raise tornado.web.HTTPError(404,"Directory not found")
 		if(resourceCategory == "file"):
