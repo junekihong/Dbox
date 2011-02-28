@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 /**
  * Login Activity
@@ -29,7 +28,7 @@ public class Login extends Activity
 	/**
 	 * Login progress dialog
 	 */
-	private ProgressDialog mLoginProgress;
+	private ProgressDialog mProgress;
 	
 	/**
 	 * Login progress dialog
@@ -55,63 +54,6 @@ public class Login extends Activity
 	 * User Input: Password 
 	 */
 	private String mPassword;
-	
-	/**
-	 * Asynchronous Login Task
-	 */
-	private class LoginTask extends AsyncTask<String, Integer, LoggedIn>
-	{
-		/**
-		 * Executes task on a background thread.
-		 */
-		@Override
-		protected LoggedIn doInBackground(String... data)
-		{
-			return WebService.login(mHost,mPort,mUsername,mPassword);
-		}
-
-		/**
-		 * Called on the UI thread after doInBackground has finished.
-		 */
-		@Override
-	    protected void onPostExecute(LoggedIn result)
-	    {
-	    	hideLoginDialog();
-	    	
-	    	switch (result)
-	    	{
-	    		case SUCCESS:
-	    			try
-					{
-						URL url = new URL(mHost);
-						String path = "http://" + url.getHost() + ":" + mPort + "/" + mUsername + "/";
-						
-		    			Bundle b = new Bundle();
-		    			b.putString("host", mHost);
-		    			b.putInt("port", mPort);
-		    			b.putString("username", mUsername);
-		    			b.putString("password", mPassword);
-		    			b.putString("path", path);
-		    			
-		    			Intent i = new Intent(Login.this,DirList.class);
-		    			i.putExtras(b);
-			    		startActivity(i);
-					}
-					catch (Exception e)
-					{
-						e.printStackTrace();
-					}
-	    			
-		    		break;
-	    		case FAILURE:
-	    			showErrorDialog("Invalid Login Credentials");
-	    			break;
-	    		case ERROR:
-	    			showErrorDialog("Could not connect to the host on the specified port.");
-	    			break;
-	    	}
-	    }
-	}
 
 	/** Task to register a new user, logging in when completed. */
 	private class RegisterTask extends AsyncTask<String, Integer, LoggedIn>
@@ -131,7 +73,7 @@ public class Login extends Activity
 		@Override
 	    protected void onPostExecute(LoggedIn result)
 	    {
-	    	hideLoginDialog();
+	    	hideProgressDialog();
 	    	
 	    	switch (result)
 	    	{
@@ -168,8 +110,6 @@ public class Login extends Activity
 	    }
 	}
 
-	
-	
     /**
      * Called when the activity is first created.
      */
@@ -179,6 +119,27 @@ public class Login extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         
+        Bundle b = getIntent().getExtras();
+        
+        if (b != null)
+        {
+        	String url = b.getString("path");
+        	mPort = b.getInt("port");
+        	
+        	if (url != null)
+        	{
+        		String h = "";
+        		
+        		try { h = new URL(url).getHost(); } catch (Exception e) {}
+        		
+	        	EditText host = (EditText) findViewById(R.id.host_input);
+	        	host.setText(h);
+	        	
+	        	EditText port = (EditText) findViewById(R.id.port_input);
+	        	port.setText("" + mPort);
+        	}
+        }
+        
         Button login = (Button) findViewById(R.id.login_button);
         login.setOnClickListener
         (
@@ -186,38 +147,31 @@ public class Login extends Activity
     		{
     			public void onClick(View v)
    				{
-    				// get the user input
-   					String host = ((EditText) findViewById(R.id.host_input)).getText().toString();
-   					String port = ((EditText) findViewById(R.id.port_input)).getText().toString();
-   					String username = ((EditText) findViewById(R.id.username_input)).getText().toString();
-   					String password = ((EditText) findViewById(R.id.password_input)).getText().toString();
-   					
-   					// check for input errors
-   					if (host.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid host.");
-   					}
-   					else if (port.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid port.");
-   					}
-   					else if (username.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid username.");
-   					}
-   					else if (password.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid password.");
-   					}
-   					else
-   					{
-   						mHost = host;
-   						mPort = Integer.parseInt(port);
-   						mUsername = username;
-   						mPassword = password;
-   						
-   						showLoginDialog();
-   						new LoginTask().execute(host,port,username,password);
+    				if (checkInput())
+    				{
+						try
+						{
+							URL url = new URL(mHost);
+							String path = "";
+							Intent i;
+							
+							path = "http://" + url.getHost() + ":" + mPort + "/" + mUsername + "/";
+							i = new Intent(Login.this,DirList.class);
+							
+			    			Bundle b = new Bundle();
+			    			b.putString("host", mHost);
+			    			b.putInt("port", mPort);
+			    			b.putString("username", mUsername);
+			    			b.putString("password", mPassword);
+			    			b.putString("path", path);
+			    			
+			    			i.putExtras(b);
+				    		startActivity(i);
+						}
+						catch (Exception e)
+						{
+							showErrorDialog("An error occured parsing your login credentials. Ensure that they are valid and try again.");
+						} 
    					}
     			}
     		}
@@ -232,78 +186,75 @@ public class Login extends Activity
     		{
     			public void onClick(View v)
    				{
-    				// get the user input
-   					String host = ((EditText) findViewById(R.id.host_input)).getText().toString();
-   					String port = ((EditText) findViewById(R.id.port_input)).getText().toString();
-   					String username = ((EditText) findViewById(R.id.username_input)).getText().toString();
-   					String password = ((EditText) findViewById(R.id.password_input)).getText().toString();
-   					
-   					// check for input errors
-   					if (host.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid host.");
-   					}
-   					else if (port.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid port.");
-   					}
-   					else if (username.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid username.");
-   					}
-   					else if (password.equals(""))
-   					{
-   						showErrorDialog("You entered an invalid password.");
-   					}
-   					else
-   					{
-   						mHost = host;
-   						mPort = Integer.parseInt(port);
-   						mUsername = username;
-   						mPassword = password;
-   						
-   						showRegistrationDialog();
-   						new RegisterTask().execute(host,port,username,password);
+    				if (checkInput())
+   					{  						
+   						showProgressDialog("Attempting register with server.");
+   						new RegisterTask().execute("");
    					}
     			}
     		}
         );
-        
     }
     
-    /**
-     * Show the login progress dialog.
-     * @return void
-     */
-    public void showLoginDialog()
+    public boolean checkInput()
     {
-    	mLoginProgress = new ProgressDialog(this);
-    	mLoginProgress.setCancelable(false);
-    	mLoginProgress.setMessage("Attempting logon to server.");
-		mLoginProgress.show();
+    	boolean valid = true;
+    	
+		String host = ((EditText) findViewById(R.id.host_input)).getText().toString();
+		String port = ((EditText) findViewById(R.id.port_input)).getText().toString();
+		String username = ((EditText) findViewById(R.id.username_input)).getText().toString();
+		String password = ((EditText) findViewById(R.id.password_input)).getText().toString();
+		
+		// check for input errors
+		if (host.equals(""))
+		{
+			showErrorDialog("You entered an invalid host.");
+			valid = false;
+		}
+		else if (port.equals(""))
+		{
+			showErrorDialog("You entered an invalid port.");
+			valid = false;
+		}
+		else if (username.equals(""))
+		{
+			showErrorDialog("You entered an invalid username.");
+			valid = false;
+		}
+		else if (password.equals(""))
+		{
+			showErrorDialog("You entered an invalid password.");
+			valid = false;
+		}
+		else
+		{
+			if (!host.contains("http://") && !host.contains("https://"))
+				host = "http://" + host;
+			
+			mHost = host;
+			mPort = Integer.parseInt(port);
+			mUsername = username;
+			mPassword = password;
+		}
+		
+		return valid;
     }
     
     /**
      * Show the registration progress dialog.
      * @return void
      */
-    public void showRegistrationDialog()
+    public void showProgressDialog(String message)
     {
-    	mLoginProgress = new ProgressDialog(this);
-    	mLoginProgress.setCancelable(false);
-    	mLoginProgress.setMessage("Attempting register with server.");
-		mLoginProgress.show();
+    	mProgress = new ProgressDialog(this);
+    	mProgress.setCancelable(false);
+    	mProgress.setMessage(message);
+		mProgress.show();
     }
-
     
-    /**
-     * Hide the login progress dialog.
-     * @return void
-     */
-    public void hideLoginDialog()
+    public void hideProgressDialog()
     {
-    	mLoginProgress.dismiss();
-    	mLoginProgress = null;
+    	mProgress.dismiss();
     }
     
     /**
@@ -313,6 +264,7 @@ public class Login extends Activity
     public void showErrorDialog(String error)
     {
     	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	
     	builder
     		.setTitle("Error")
     		.setMessage(error)

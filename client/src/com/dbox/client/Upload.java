@@ -12,9 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 
-
-
-
 /**
  * Uploading Activity
  */
@@ -43,7 +40,14 @@ public class Upload extends Activity
 		protected Boolean doInBackground(String... data)
 		{
 			String mBody = XmlEngine.resourceToXml(thing);			
-			return WebService.put(mUrl,mPort,mUsername,mPassword,mBody);
+			try {
+				return WebService.put(mUrl,mPort,mUsername,mPassword,mBody);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return false;
 		}
 	
 		/**

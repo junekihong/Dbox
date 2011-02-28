@@ -276,8 +276,6 @@ public class DirList extends Activity
         return true;
     }
     
-    //----------------------------------------------------------------------------------------
-    
     
     public boolean onOptionsItemSelected(MenuItem item)
     {
@@ -302,6 +300,9 @@ public class DirList extends Activity
     		return true;
     	case R.id.home:
     		home();
+    		return true;
+    	case R.id.password:
+    		openChangePasswordScreen();
     		return true;
         }
         return false;
@@ -370,6 +371,21 @@ public class DirList extends Activity
 		finish();
     }
     
+    public void openChangePasswordScreen()
+    {
+		Intent i = new Intent(DirList.this,Password.class);
+		Bundle b = new Bundle();
+		b.putString("username",mUsername);
+		b.putString("password",mPassword);
+		b.putString("host","http://" + mUrlObj.getHost());
+		b.putInt("port", mPort);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		i.putExtras(b);
+		startActivity(i);
+		finish();
+    }
+    
     public void printMessage(String message)
     {
     	Toast.makeText(this,message, Toast.LENGTH_LONG).show();
@@ -379,25 +395,6 @@ public class DirList extends Activity
     {
     	DirList.finishUnlessHome = true;
     	finish();
-    	/*
-    	try
-    	{
-	    	String home = "http://" + new URL(mUrl).getHost() + ":" + mPort + "/" + mUsername + "/";
-	    	
-			Intent i = new Intent(DirList.this,DirList.class);
-			Bundle b = new Bundle();
-			b.putString("username",mUsername);
-			b.putString("password",mPassword);
-			b.putString("path", home);
-			b.putInt("port",mPort);
-			i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			//i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-			i.putExtras(b);
-			startActivity(i);
-			finish();
-    	}
-    	catch (Exception e) {}
-    	*/
     }
     
     @Override

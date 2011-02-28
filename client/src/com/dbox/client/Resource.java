@@ -8,11 +8,13 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.Date;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Base64;
 import android.webkit.MimeTypeMap;
 
 
-public class Resource
+public class Resource implements Parcelable
 {
 	private String name;
 	private String url;
@@ -20,7 +22,7 @@ public class Resource
 	private Date date;
 	private int size;
 	private boolean isDirectory;
-	private String content;
+	private byte[] content;
 	
 	public Resource( String name, String url, String type, Date date, int size, boolean dir)
 	{
@@ -31,6 +33,29 @@ public class Resource
 		this.size = size;
 		this.isDirectory = dir;
 	}
+	
+	public Resource (Parcel in)
+	{
+		name = in.readString();
+		url = in.readString();
+		type = in.readString();
+		date = new Date(in.readLong());
+		size = in.readInt();
+		isDirectory = (in.readInt() == 1) ? true : false;
+	}
+	
+	public static final Parcelable.Creator<Resource> CREATOR = new Parcelable.Creator<Resource>()
+	{
+		public Resource createFromParcel(Parcel in)
+		{
+			return new Resource(in); 
+		}
+
+		public Resource[] newArray(int size)
+		{
+			return new Resource[size];
+		}
+	};
 	
 	public Resource(File file)
 	{
@@ -86,9 +111,8 @@ public class Resource
 		this.date = new Date(file.lastModified());
 		this.size = (int) file.length();
 		this.isDirectory = file.isDirectory();
-		this.content = Base64.encodeToString(bytes, Base64.DEFAULT);
+		this.content = Base64.encode(bytes, Base64.DEFAULT);
 	}
-	
 	
 	public String name()
 	{
@@ -125,13 +149,33 @@ public class Resource
 		return isDirectory;
 	}
 	
-	public String content()
+	public byte[] content()
 	{
 		return content;
 	}
 	
-	public void setContent(String c)
+	public void setContent(byte[] c)
 	{
 		content = c;
+	}
+	
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags)
+	{
+		dest.writeString(name);
+		dest.writeString(url);
+		dest.writeString(type);
+		dest.writeLong(date.getTime());
+		dest.writeInt(size);
+		
+		if (isDirectory)
+			dest.writeInt(1);
+		else
+			dest.writeInt(0);
 	}
 }
