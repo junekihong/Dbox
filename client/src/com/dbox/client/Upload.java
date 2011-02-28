@@ -61,8 +61,59 @@ public class Upload extends Activity
 	    	onUploadResponse();
 			
 	    }
-	    
 	}
+	
+	/**
+	 * Asynchronous Upload Task
+	 */
+	private class LsTask extends AsyncTask<String, Integer, Boolean>
+	{
+		/**
+		 * Executes task on a background thread.
+		 */
+		@Override
+		protected Boolean doInBackground(String... data)
+		{
+			File f = Environment.getExternalStorageDirectory();
+			
+			File Uploads = new File(f,"Uploads/");
+			
+			if (!Uploads.exists())
+				Uploads.mkdir();
+			
+			File[] list= Uploads.listFiles();
+			
+			int listLength =list.length;
+			if (listLength==0)
+				System.out.println("LIST IS EMPTY");
+			
+			resources= new Resource[listLength];
+			
+			for(int i = 0; i < list.length; i++)
+			{
+				try 
+				{
+					resources[i] = new Resource(list[i], new URL(mUrl).getPath().substring(1));
+				} 
+				catch (MalformedURLException e) 
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			return true;
+		}
+	
+		/**
+		 * Called on the UI thread after doInBackground has finished.
+		 */
+		@Override
+	    protected void onPostExecute(Boolean result)
+	    {
+	    	buildList();
+	    }
+	}
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -78,7 +129,9 @@ public class Upload extends Activity
 			mUsername = bundle.getString("username");
 	        mPassword = bundle.getString("password");
 			
-			buildList();
+	        showProgressDialog("Reading from SDCard/Uploads/");
+	        new LsTask().execute("");
+			//buildList();
 			//put();
 		}
 		catch(Exception e)
@@ -86,45 +139,10 @@ public class Upload extends Activity
 			e.printStackTrace();
 		}
 	}
-
-	public void put()
-	{
-		
-		showProgressDialog("Uploading to server.");
-		new UploadFileTask().execute("");
-	}
-
+	
 	public void buildList()
 	{
-		
-		File f = Environment.getExternalStorageDirectory();
-		File Uploads = new File(f,"Uploads/");
-		if(!Uploads.exists())
-			Uploads.mkdir();
-		
-		File[] list= Uploads.listFiles();
-		
-		int listLength =list.length;
-		if(listLength==0)
-			System.out.println("LIST IS EMPTY");
-		
-		resources= new Resource[listLength];
-		
-		for(int i = 0; i < list.length; i++)
-		{
-			//resources[i] = new Resource(list[i]);
-			try 
-			{
-				resources[i] = new Resource(list[i], new URL(mUrl).getPath().substring(1));
-			} 
-			catch (MalformedURLException e) 
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		adapter = new DirListAdapter(this,resources);
+		adapter = new DirListAdapter(Upload.this,resources);
 		listView=(ListView)findViewById(R.id.list);
 		listView.setAdapter(adapter);
 		
@@ -142,6 +160,15 @@ public class Upload extends Activity
 				}
 			}
 		);
+		
+		hideProgressDialog();
+	}
+
+	public void put()
+	{
+		
+		showProgressDialog("Uploading to server.");
+		new UploadFileTask().execute("");
 	}
 
 	public void onUploadResponse()

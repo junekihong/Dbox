@@ -72,7 +72,11 @@ public class DirListAdapter extends BaseAdapter
         else
         {
         	holder.image.setImageResource(R.drawable.file);
-        	holder.metadata.setText(ls[position].dateFormatted() + "  -  " + ls[position].type());
+        	
+        	if (ls[position].type() != null)
+        		holder.metadata.setText(ls[position].dateFormatted() + "  -  " + ls[position].type());
+        	else
+        		holder.metadata.setText(ls[position].dateFormatted());
         }
         return resource;
     }

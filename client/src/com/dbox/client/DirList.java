@@ -1,9 +1,12 @@
 package com.dbox.client;
 
 import java.net.URL;
+import java.util.Arrays;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -79,6 +83,40 @@ public class DirList extends Activity
 				
 				openLoginScreen();
 			}
+	    }
+	}
+	
+	private class MakeDirTask extends AsyncTask<String, Integer, Integer>
+	{
+		/**
+		 * Executes task on a background thread.
+		 */
+		@Override
+		protected Integer doInBackground(String... data)
+		{
+			try
+			{
+				WebService.put(mUrl,mPort,mUsername,mPassword,data[0]);
+			}
+			catch (HttpException e)
+			{
+				return -2;
+			}
+			catch (Exception e)
+			{
+				return -1;
+			}
+			return 1;
+		}
+
+		/**
+		 * Called on the UI thread after doInBackground has finished.
+		 */
+		@Override
+	    protected void onPostExecute(Integer result)
+	    {
+			hideProgressDialog();
+			ls();
 	    }
 	}
 	
@@ -188,6 +226,8 @@ public class DirList extends Activity
     
     public void onServerResponse()
     {
+    	Arrays.sort(ls);
+    	
     	hideProgressDialog();
     	
     	if (ls.length==0)
@@ -304,6 +344,9 @@ public class DirList extends Activity
     		i.putExtras(b);
     		startActivity(i);
     		return true;
+    	case R.id.upload_dir:
+    		makeDir();
+    		return true;
     	case R.id.logout:
     		openLoginScreen();
     		return true;
@@ -404,6 +447,41 @@ public class DirList extends Activity
     {
     	DirList.finishUnlessHome = true;
     	finish();
+    }
+    
+    public void makeDir()
+    {
+    	final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+		final EditText input = new EditText(this);
+		alert.setTitle("Folder Name");
+		alert.setView(input);
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton)
+			{
+				String value = input.getText().toString().trim();
+				
+				StringBuilder sb = new StringBuilder();
+				sb.append("<ResourceUpload>");
+				sb.append("<Resource category=\"directory\">");
+				sb.append("<ResourceName>" + value + "</ResourceName>");
+				sb.append("<ResourceLocation>" + mUrlObj.getPath().substring(1) + "</ResourceLocation>");
+				sb.append("</Resource>");
+				sb.append("</ResourceUpload>");
+				
+				showProgressDialog("Creating Directory");
+				new MakeDirTask().execute(sb.toString());
+			}
+		});
+
+		alert.setNegativeButton("Cancel",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						dialog.cancel();
+					}
+				});
+		alert.show();
+		
+		input.requestFocus();
     }
     
     @Override

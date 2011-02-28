@@ -77,7 +77,7 @@
 				android:layout_marginLeft="15dp" 
 				android:layout_marginRight="15dp" 
 				android:nextFocusDown="@+id/port_input"
-				android:text=""
+				android:text="acm.jhu.edu"
 			/>
 			<EditText 
 				android:id="@+id/port_input" 
@@ -90,7 +90,7 @@
 				android:layout_marginTop="4dp" 
 				android:layout_marginRight="15dp" 
 				android:nextFocusDown="@+id/username_input"
-				android:text=""
+				android:text="8042"
 			/>
 		</LinearLayout>
 
@@ -118,7 +118,7 @@
 			android:layout_marginLeft="15dp" 
 			android:layout_marginRight="15dp" 
 			android:nextFocusDown="@+id/password_input"
-			android:text=""
+			android:text="foo"
 		/>
 
 		<TextView
@@ -144,7 +144,7 @@
 			android:layout_marginTop="4dp"
 			android:layout_marginLeft="15dp" 
 			android:layout_marginRight="15dp" 
-			android:text=""
+			android:text="42"
 		/>
 
 		<Button

@@ -10,11 +10,10 @@ import java.util.Date;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Base64;
 import android.webkit.MimeTypeMap;
 
 
-public class Resource implements Parcelable
+public class Resource implements Parcelable, Comparable<Resource>
 {
 	private String name;
 	private String url;
@@ -57,65 +56,6 @@ public class Resource implements Parcelable
 		}
 	};
 	
-	public Resource(File file)
-	{
-		String name = file.getName();
-		
-		String ext;
-		int x = name.lastIndexOf(".");
-		if(x<0)
-			ext = "";
-		else
-			ext = name.substring(x);
-		
-		FileInputStream stream = null;
-		FileChannel channel = null;
-		byte[] bytes = null;
-		
-		try 
-		{
-	        stream = new FileInputStream(file);
-	        channel = stream.getChannel();
-	        int size = (int) channel.size();
-	        MappedByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, size);
-	        bytes = new byte[size];
-	        buffer.get(bytes);
-
-	    } 
-		catch (IOException e) 
-	    {
-	        e.printStackTrace();
-	    }
-		finally 
-		{
-			try 
-			{
-	            if (stream != null) 
-	            {
-	                stream.close();
-	            }
-	            if (channel != null) 
-	            {
-	                channel.close();
-	            }
-	        } 
-			catch (IOException e) 
-	        {
-	            e.printStackTrace();
-	        }
-	    }
-		
-		this.name = name;
-		this.url = file.getPath();
-		this.type = MimeTypeMap.getSingleton().getExtensionFromMimeType(ext);
-		this.date = new Date(file.lastModified());
-		this.size = (int) file.length();
-		this.isDirectory = file.isDirectory();
-		this.content = Base64.encode(bytes, Base64.DEFAULT);
-	}
-	
-	
-	
 	public Resource(File file, String Url)
 	{
 		String name = file.getName();
@@ -125,7 +65,7 @@ public class Resource implements Parcelable
 		if(x<0)
 			ext = "";
 		else
-			ext = name.substring(x);
+			ext = name.substring(x+1);
 		
 		FileInputStream stream = null;
 		FileChannel channel = null;
@@ -134,6 +74,7 @@ public class Resource implements Parcelable
 		try 
 		{
 	        stream = new FileInputStream(file);
+	        
 	        channel = stream.getChannel();
 	        int size = (int) channel.size();
 	        MappedByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, size);
@@ -172,9 +113,6 @@ public class Resource implements Parcelable
 		this.isDirectory = file.isDirectory();
 		this.content = Base64.encode(bytes, Base64.DEFAULT);
 	}
-	
-	
-	
 	
 	public String name()
 	{
@@ -239,5 +177,22 @@ public class Resource implements Parcelable
 			dest.writeInt(1);
 		else
 			dest.writeInt(0);
+	}
+
+	@Override
+	public int compareTo(Resource o)
+	{
+		if (isDirectory() && !o.isDirectory())
+		{
+			return -1;
+		}
+		else if (!isDirectory() && o.isDirectory())
+		{
+			return 1;
+		}
+		else
+		{
+			return name().compareToIgnoreCase(o.name());
+		}
 	}
 }
