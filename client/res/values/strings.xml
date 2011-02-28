@@ -2,4 +2,6 @@
 <resources>
     <string name="hello">Hello World, DropBox!</string>
     <string name="app_name">DropBox</string>
+    <string name="error_connect">Could not connect to the host on the specified port.</string>
+    <string name="error_login">Invalid login credentials. Please re-enter your username and password.</string>
 </resources>

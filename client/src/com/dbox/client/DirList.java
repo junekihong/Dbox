@@ -26,6 +26,10 @@ import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 
+/**
+ * Displays a directory listing from the server.
+ */
+
 public class DirList extends Activity
 {
 	public static boolean refreshOnResume = false;
@@ -79,9 +83,9 @@ public class DirList extends Activity
 			else
 			{
 				if (result == -2)
-					printMessage("Could not connect to the host on the specified port.");
+					printMessage(R.string.error_connect);
 				else
-					printMessage("Invalid login credentials. Please re-enter your username and password.");
+					printMessage(R.string.error_login);
 				
 				openLoginScreen();
 			}
@@ -158,9 +162,9 @@ public class DirList extends Activity
 			else
 			{
 				if (result == -2)
-					printMessage("Could not connect to the host on the specified port.");
+					printMessage(R.string.error_connect);
 				else
-					printMessage("Invalid login credentials. Please re-enter your username and password.");
+					printMessage(R.string.error_login);
 				
 				openLoginScreen();
 			}
@@ -433,9 +437,9 @@ public class DirList extends Activity
 		finish();
     }
     
-    public void printMessage(String message)
+    public void printMessage(int string)
     {
-    	Toast.makeText(this,message, Toast.LENGTH_LONG).show();
+    	Toast.makeText(this,string, Toast.LENGTH_LONG).show();
     }
     
     public void home()
