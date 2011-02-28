@@ -29,3 +29,25 @@ PUT /password
 
 Response on success:
 <Response>Password Changed</Response>
+
+
+
+
+
+
+FIRST TIME USERS:
+	All you need to do is run "./server.py" in order for the script to start the server
+	By default, the server will listen in on port 8042
+	If you would like to customize this, you need to say "./server.py -p 12345" to listen in on port 12345 instead.
+	Thats all there is to it! Try connecting or interacting with the server on the designated port and the script will display what is happening and what is being requested.
+
+	If you want to have a good time, we will keep our server running.
+		You can connect to "acm.jhu.edu" on port "8042" 
+		You can login with username "foo" with the password "42"
+
+		In fact, the webroot that we distribute will have a built-in user "foo" with a password "42" and some sample files.
+
+	If you want to create a new user, you can directly edit the ".passwd" file and directly create the directory in webroot.
+		... or you can just try out the client's "Registration" functionality and we will do it all automatically anyway.
+
+
