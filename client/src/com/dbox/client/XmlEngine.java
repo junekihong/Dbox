@@ -149,8 +149,8 @@ public class XmlEngine
 			sb.append("<Resource category=\"file\">");
 		
 		sb.append("<ResourceName>" + x.name() + "</ResourceName>");
-		sb.append("<ResourceSize>" + x.name() + "</ResourceSize>");
-		sb.append("<ResourceURL>" + x.url() + "</ResourceURL>");
+		sb.append("<ResourceSize>" + x.size() + "</ResourceSize>");
+		sb.append("<ResourceLocation>" + x.url() + "</ResourceLocation>");
 		sb.append("<ResourceDate>");
 		sb.append("<year>" + x.date().getYear() + "</year>");
 		sb.append("<month>" + x.date().getMonth() + "</month>");
@@ -159,7 +159,14 @@ public class XmlEngine
 		sb.append("<min>" + x.date().getMinutes() + "</min>");
 		sb.append("<sec>" + x.date().getSeconds() + "</sec>");
 		sb.append("</ResourceDate>");
+		
+	//	sb.append("<ResourceContent>"+Base64.encodeToString(x.content(), Base64.DEFAULT)+"</ResourceContent>");
+		sb.append("<ResourceContent>"+new String(x.content())+"</ResourceContent>");
+		
+		sb.append("<ResourceEncoding>" + "Base64" + "</ResourceEncoding>");
+		
 		sb.append("<ResourceType>" + x.type() + "</ResourceType>");
+		sb.append("</Resource>");
 		
 		return sb.toString();
 	}

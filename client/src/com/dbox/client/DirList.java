@@ -297,6 +297,9 @@ public class DirList extends Activity
     	case R.id.upload:
     		Bundle b = new Bundle();
     		b.putString("path", mUrl);
+    		b.putString("username",mUsername);
+    		b.putString("password", mPassword);
+    		b.putInt("port",mPort);
     		Intent i = new Intent(this, Upload.class);
     		i.putExtras(b);
     		startActivity(i);

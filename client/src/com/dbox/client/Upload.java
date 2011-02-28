@@ -1,6 +1,8 @@
 package com.dbox.client;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -72,7 +74,9 @@ public class Upload extends Activity
 		try
 		{
 			mUrl = bundle.getString("path");
-			
+			mPort = bundle.getInt("port");
+			mUsername = bundle.getString("username");
+	        mPassword = bundle.getString("password");
 			
 			buildList();
 			//put();
@@ -96,22 +100,28 @@ public class Upload extends Activity
 		File f = Environment.getExternalStorageDirectory();
 		File Uploads = new File(f,"Uploads/");
 		if(!Uploads.exists())
-		{
 			Uploads.mkdir();
-		}
-		File[] list= Uploads.listFiles();
 		
+		File[] list= Uploads.listFiles();
 		
 		int listLength =list.length;
 		if(listLength==0)
-		{
 			System.out.println("LIST IS EMPTY");
-		}
+		
 		resources= new Resource[listLength];
 		
-		for(int i = 0; i < list.length-1; i++)
+		for(int i = 0; i < list.length; i++)
 		{
-			resources[i] = new Resource(list[i]);
+			//resources[i] = new Resource(list[i]);
+			try 
+			{
+				resources[i] = new Resource(list[i], new URL(mUrl).getPath().substring(1));
+			} 
+			catch (MalformedURLException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		adapter = new DirListAdapter(this,resources);
