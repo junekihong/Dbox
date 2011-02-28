@@ -16,6 +16,7 @@ from xml.dom import minidom
 
 
 
+#Helper function to get the text contained in an xml tag
 def getText(dom,name):
 	try:
 		return dom.getElementsByTagName(name)[0].childNodes[0].wholeText
@@ -24,17 +25,19 @@ def getText(dom,name):
 
 
 class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
+	#Function used by the digest auth to check credentials
 	def getcreds(uname):
 		if uname in MainHandler.creds:
 			return MainHandler.creds[uname]
 		
 		
-	#Handle Get Request
+	#Handle Get Request, calling output_file or output_directory to do the actual work
 	@digest.digest_auth('Dbox',getcreds)
 	def get(self,resource):
 		realpath = os.path.realpath(os.path.join(self.WEBROOT, resource))
 		#Ensure that the requested path (canonicalized) is actually in the user's home directory 
 		userdir =  os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
+		#Check for permission before 404 to avoid leaking the existence of other users' files
 		if not realpath.startswith(userdir):
 			raise tornado.web.HTTPError(403,"Forbidden")
 		if not os.path.exists(realpath):
@@ -45,7 +48,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			self.output_file(resource,realpath)
 			
 				
-	#Handle Delete Request
+	#Handle Delete Request (deleting the file or directory tree if allowed)
 	@digest.digest_auth('Dbox',getcreds)
 	def delete(self,resource):
 		realpath = os.path.realpath(os.path.join(self.WEBROOT, resource))
@@ -65,7 +68,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			self.write("Success: Removed the file")
 
 
-	#Handle Put Request
+	#Handle Put Request. Read the xml message from the client; the resource provided in the url is ignored
 	@digest.digest_auth('Dbox',getcreds)
 	def put(self, resource):
 		dom= minidom.parseString(self.request.body)
@@ -77,8 +80,6 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		realdirectory = os.path.realpath(os.path.join(self.WEBROOT, resourceLocation)) 
 		userdir = os.path.realpath(os.path.join(self.WEBROOT, self.params['username']))
 		
-
-		
 		if not realpath.startswith(userdir):
 			raise tornado.web.HTTPError(403,"Forbidden")
 		if not os.path.isdir(realdirectory):
@@ -88,10 +89,12 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			resourceContent=getText(dom,"ResourceContent")
 			resourceEncoding=getText(dom,"ResourceEncoding")
 			
+			#Decode the base64 if the content was encoded
 			if(resourceEncoding == "Base64"):
 				resourceContent=base64.b64decode(resourceContent)
-				f.write(resourceContent)
-				f.close()
+
+			f.write(resourceContent)
+			f.close()
 		elif(resourceCategory == "directory"):
 			if os.path.exists(realpath):
 				raise tornado.web.HTTPError(400,"Bad Request: Directory already exists")
@@ -105,7 +108,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	def output_directory(self,resource,realpath):
 		self.write("<ResourceList>\n")
 		entries = os.listdir(realpath)
-		#Create an entry for the parent directory, but omit it if the parent is the webroot
+		#Create an entry for the parent directory, but omit it if the parent is the webroot (don't put a .. entry in /user/)
 		if os.path.realpath(os.path.join(realpath,'..')) != os.path.realpath(self.WEBROOT):
 			entries.insert(0,'..')
 
@@ -123,6 +126,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			else:
 				category = "file"
 
+			#Write out the xml for this Resource
 			self.write("<Resource category=\"%s\">\n" % category)
 			self.write("\t<ResourceName>%s</ResourceName>\n" % e)
 			self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
@@ -157,7 +161,6 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 			encoding = "Base64"
 			use_base64 = True
 
-
 		self.write("<Resource category=\"file\">\n")
 		self.write("\t<ResourceName>%s</ResourceName>\n" % resource.split('/')[-1])
 		self.write("\t<ResourceSize>%i</ResourceSize>\n" % stats.st_size)
@@ -188,6 +191,7 @@ class MainHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 		self.write("</ResourceDownload>\n")
 	
 
+#Handle the PUT /register action
 class RegistrationHandler(tornado.web.RequestHandler):
 	def put(self):
 		dom= minidom.parseString(self.request.body)
@@ -199,6 +203,7 @@ class RegistrationHandler(tornado.web.RequestHandler):
 		userdir = os.path.realpath(os.path.join(MainHandler.WEBROOT, username))
 		if not os.path.exists(userdir):
 			os.mkdir(userdir)
+		#Add the user to the credentials dictionary and save to the .passwd file for future runs
 		MainHandler.creds[username] = {'auth_username': username, 'auth_password': password}
 		pwfile=os.path.join(MainHandler.WEBROOT,".passwd")
 		f = open(pwfile,"a")
@@ -206,6 +211,7 @@ class RegistrationHandler(tornado.web.RequestHandler):
 		f.close()
 		self.write("<Response>User Created</Response>")
 
+#Handle the PUT /password request (to change a user's password)
 class PasswordHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 	def getcreds(uname):
 		if uname in MainHandler.creds:
@@ -233,14 +239,16 @@ class PasswordHandler(digest.DigestAuthMixin, tornado.web.RequestHandler):
 def read_passwordfile():
 	filename=os.path.join(MainHandler.WEBROOT,".passwd")
 	creds = {}
+	#If password file doesn't exist, create it
 	if not os.path.isfile(filename):
-		raise Exception("Error: Password file '%s' not found."%filename)
+		f=open(filename,'w')
+		f.close()
 	f = open(filename)
 	for l in f:
 		if l.find(':') >= 0:
 			[user,pw] = l.strip().split(":",1)
 			creds[user] = {'auth_username': user, 'auth_password': pw}
 	if not creds:
-		raise Exception("Error: Password file contained no users (expected a file with lines in the format user:password)")
+		print "Warning: Password file contained no users. Clients must send register requests before anyone can log in." 
 	MainHandler.creds = creds
 	MainHandler.pwpath = os.path.realpath(filename)
