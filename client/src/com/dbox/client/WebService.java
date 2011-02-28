@@ -15,7 +15,6 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
@@ -167,8 +166,7 @@ public class WebService
 
 			// Send the request and receive the response.
 			HttpPut httpput = new HttpPut(url);
-			BasicHttpEntity x = new BasicHttpEntity();
-			x.setContent(new ByteArrayInputStream(body.getBytes("UTF-8")));
+			StringEntity x = new StringEntity(body);
 			httpput.setEntity(x);
 			
 			HttpResponse response = httpclient.execute(httpput);

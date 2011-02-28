@@ -190,6 +190,12 @@ public class DirList extends Activity
     {
     	hideProgressDialog();
     	
+    	if (ls.length==0)
+    	{
+    		TextView t = (TextView) findViewById(R.id.empty);
+    		t.setVisibility(View.VISIBLE);
+    	}
+    	
         adapter = new DirListAdapter(this,ls);
         list = (ListView)findViewById(R.id.list);
         list.setAdapter(adapter);
