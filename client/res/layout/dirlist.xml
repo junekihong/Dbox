@@ -4,10 +4,13 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     <TextView
-        android:id="@+id/path"
+        android:id="@+id/empty"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content" 
-        android:text="/noah/"/>
+        android:text="This directory is empty. You can upload files by pressing 'menu' and 'upload'."
+        android:gravity="center_horizontal"
+        android:visibility="gone"
+    />
     <ListView
         android:id="@+id/list"
         android:layout_width="fill_parent"
