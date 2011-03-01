@@ -141,7 +141,7 @@ public class ViewFile extends Activity
 	        mLocalPath = mUrlObj.getPath();
 	        
 	        File root = Environment.getExternalStorageDirectory();
-	        File local = new File(root,"downloads/" + mLocalPath);
+	        File local = new File(root,"Downloads/" + mLocalPath);
 	        
 	        mLocalUri = Uri.fromFile(local);
 	        
@@ -348,7 +348,7 @@ public class ViewFile extends Activity
 
     		if (root.canWrite())
     		{
-    			File f = new File(root, "downloads/" + path);
+    			File f = new File(root, "Downloads/" + path);
     			File x = new File(f.getParent());
     			x.mkdirs();
     			x = null;
