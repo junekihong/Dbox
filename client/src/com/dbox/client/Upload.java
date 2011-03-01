@@ -25,7 +25,6 @@ import android.widget.AdapterView.OnItemClickListener;
 /**
  * Uploading Activity
  */
-
 public class Upload extends Activity
 {
 	public static boolean killMe = false;
@@ -130,6 +129,10 @@ public class Upload extends Activity
 	    }
 	}
 	
+	/** 
+	 * Called when the Activity is first created
+	 * 
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -243,7 +246,7 @@ public class Upload extends Activity
 	}
 	
 	/**
-	 * Show the login progress dialog
+	 * Show the Upload progress dialog
 	 * @return void
 	 */
 	public void showProgressDialog(String message)
@@ -256,7 +259,7 @@ public class Upload extends Activity
 	}
 	
 	/**
-	 * Hide the login progress dialog
+	 * Hide the Upload progress dialog
 	 * @return void
 	 */
 	public void hideProgressDialog()
@@ -265,30 +268,29 @@ public class Upload extends Activity
 		mProgressDialog = null;
 	}
 	
-	   public boolean onCreateOptionsMenu(Menu menu)
-	    {
-	        MenuInflater inflater = getMenuInflater();
-	        inflater.inflate(R.menu.upload, menu);	        
-	        return true;
-	    }
+	public boolean onCreateOptionsMenu(Menu menu)
+	{
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.upload, menu);	        
+		return true;
+	}
 	    
-	    
-	    public boolean onOptionsItemSelected(MenuItem item)
-	    {
-	        // Handle item selection
-	        switch (item.getItemId())
-	        {
-	    	case R.id.return_to_server:
-	    		DirList.refreshOnResume=true;
-	    		if (!isRoot)
-	    			killMe = true;
-	    		
-	    		finish();
-	    		return true;
-	        }
-	        return false;
-	    }
-	
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        // Handle item selection
+        switch (item.getItemId())
+        {
+    	case R.id.return_to_server:
+    		DirList.refreshOnResume=true;
+    		if (!isRoot)
+    			killMe = true;
+    		
+    		finish();
+    		return true;
+        }
+        return false;
+    }
+
     public void onWindowFocusChanged(boolean hasFocus)
     {
     	if (killMe)
