@@ -1,0 +1,175 @@
+Computer Network Fundamentals
+600.444
+Project 1: Drop Box
+
+-----------------------
+|  TABLE OF CONTENTS  |
+-----------------------
+(1)  Team Members
+(2)  Server
+(3)  Client
+(4)  3rd Party Libraries
+(5)  Getting Started
+
+
+-----------------------
+|    Team Members     |
+-----------------------
+
+Jeremy Weiss <jweiss21@jhu.edu>
+Juneki Hong <jhong29@jhu.edu>
+Noah Belcher <nbelche1@jhu.edu>
+
+All team members are taking the class at the 600.444 level. 
+
+
+-----------------------
+|       Server        |
+-----------------------
+
+The server was written in Python. We made use of Tornado (for the web server) 
+and Curtain (for digest authentication). Both are included in our project 
+source code to make distribution easier.
+
+Running the Server:
+To run: ./server.py
+-p can be used to specify the port
+-w can be used to specify an alternate webroot
+
+Protocol extensions:
+To register a new user:
+Request:
+PUT /register
+<Registration>
+        <Username>bob</Username>
+        <Password>42</Password>
+</Registration>
+
+Response on success:
+<Response>User Created</Response>
+
+To change the password of the logged-in user:
+PUT /password
+<Password>1</Password>
+
+Response on success:
+<Response>Password Changed</Response>
+
+
+-----------------------
+|       Client        |
+-----------------------
+
+The client was written in Java for Android devices. We have tested it on 
+physical devices running Android 2.0, 2.1, and 2.2. We have also tested it 
+on the Android emulator for the same OS versions. 
+
+Activities:
+ - Login.java
+   Enables the user to login or register.
+   
+ - Password.java
+   Enables the user to change their password.
+   
+ - DirList.java
+   Shows a directory listing from the server. From here, the user
+   can view or remove other directories or files. The user also 
+   has the option of uploading a file to the current directory
+   from their SDCard. 
+   
+ - ViewFile.java
+   Shows the information for a given file. The user has the option of
+   previewing the file. If the file is a common text/image/audio/document 
+   format, we will display a preview of the file for the user. The 
+   user also has the option of removing the file.
+   
+ - Upload.java
+   Displays a listing of files in SDCard/Uploads/. The user can choose 
+   to upload a file to the server and/or return to the server.
+
+Other Java files:
+ - Base64.java
+   This is the Android 2.2 Base64 class (exported from android.util.Base64). 
+   We included it because it is only available in Android 2.2, and we wanted 
+   to support previous versions of Android. (For example, 2.0 and 2.1)
+   For more information, please see (2) under "3rd party Libraries." 
+   
+ - DirListAdapter.java
+   A custom adapter (that extends from android.widget.BaseAdapter) written for
+   a ListView object (used in DirList.java). This adapter enables us to display 
+   icons next to entries in a ListView. 
+   
+ - HttpException.java
+   Custom exception object that gets thrown when a connection problem occurs. 
+   This exception would get thrown if the server is down or if the user entered
+   an invalid host or port. 
+   
+ - LoginException.java
+   Custom exception object that gets thrown when a problem occurs during login. 
+   This exception would be thrown if the server returned 401 Unauthorized.
+   
+ - Resource.java
+   An object that represents the centents of a file/folder resource. It also 
+   contains all of the appropriate metadata so that the client and the server 
+   can know what to do and where to send the file.
+   
+ - WebService.java
+   Provides static methods for sending and receiving data from the server.
+   
+ - XmlEngine.java
+   Converts XML to Resource objects and Resource objects to XML.
+
+An external JAR file is needed for compilation and is included in our project. 
+Please see (1) under "3rd Party Libraries" below. 
+
+-----------------------
+| 3rd Party Libraries |
+-----------------------
+
+(1) Apache Commons IO   
+    Location: client/assets/commons-io-2.0.1.jar
+    
+    We used the Commons IO for some file operations and input stream to byte
+    array conversions. 
+    
+    
+(2) Android Base64
+    Location: client/src/com/dbox/client/Base64.java
+
+    Android ships with a Base64 encoded/decoder for SDK versions >= 2.2. 
+    To ensure support Android OS versions < 2.2, we checked out the source 
+    code for android.util.Base64 and added it to com.dbox.client.Base64.
+    This provides the reliability of Android's latest Base64 class, while 
+    ensuring that the dbox client will run on previous versions of Android. 
+    
+(3) Tornado Web Server
+    Location: dropboxserver/tornado
+    
+    Used for the web server.
+    
+(4) Curtain for Tornado
+    Location: dropboxserver/curtain
+
+    Curtain provides digest authentication for Tornado. The Curtain files 
+    have been slightly modified by us to fix a couple of bugs.
+
+
+-----------------------
+|   Getting Started   |
+-----------------------
+
+All you need to do is run "./server.py" in order for the script to start the 
+server. By default, the server will listen in on port 8042. If you would like 
+to customize this, you need to say "./server.py -p 12345" to listen in on port 
+12345 instead. Thats all there is to it! Try connecting or interacting with the 
+server on the designated port and the script will display what is happening and 
+what is being requested.
+
+If you want to have a good time, we will keep our server running. You can connect 
+to "acm.jhu.edu" on port "8042". You can login with username "foo" with the 
+password "42". In fact, the webroot that we distribute will have a built-in user 
+"foo" with a password "42" and some sample files.
+
+If you want to create a new user, you can directly edit the ".passwd" file and 
+directly create the directory in webroot... or you can just try out the client's 
+"Registration" functionality and we will do it all automatically for you.
